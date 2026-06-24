@@ -960,19 +960,40 @@ async function saveFic(){
   if(rawInput&&!pendingFandoms.includes(rawInput))pendingFandoms.push(rawInput);
   if(!title||!author||!pendingFandoms.length){showToast('Please fill in title, author, and at least one fandom.');return;}
   const tags=(document.getElementById('f-tags').value||'').split(',').map(t=>t.trim()).filter(Boolean);
-  const payload={title,author,fandoms:pendingFandoms,ship:document.getElementById('f-ship').value.trim(),status:document.getElementById('f-status').value,words:parseInt(document.getElementById('f-words').value)||0,chapters:document.getElementById('f-chapters').value.trim(),summary:document.getElementById('f-summary').value.trim(),tags,cover:document.getElementById('f-cover').value.trim(),link:document.getElementById('f-link').value.trim()||'',favourite:false,date_added:Date.now()};
+  const payload={
+    title,
+    author,
+    fandoms:pendingFandoms,
+    ship:document.getElementById('f-ship').value.trim(),
+    status:document.getElementById('f-status').value,
+    words:parseInt(document.getElementById('f-words').value)||0,
+    chapters:document.getElementById('f-chapters').value.trim(),
+    summary:document.getElementById('f-summary').value.trim(),
+    tags,
+    cover:document.getElementById('f-cover').value.trim(),
+    link:document.getElementById('f-link').value.trim()||'',
+    favourite:false,
+    date_added:Date.now()
+  };
   setSyncing();
   try {
     if(editFicId){
-      delete payload.date_added; delete payload.favourite;
-      const updated=await updateFic(editFicId,payload);
+      const editPayload={...payload};
+      delete editPayload.date_added;
+      delete editPayload.favourite;
+      await updateFic(editFicId, editPayload);
       const idx=fics.findIndex(f=>f.id===editFicId);
-      if(idx>-1)fics[idx]={...fics[idx],...payload};
+      if(idx>-1) fics[idx]={...fics[idx],...editPayload};
       showToast(`✦ "${title}" updated!`);
     } else {
       const result=await insertFic(payload);
-      const newFic=Array.isArray(result)?result[0]:result;
-      fics.unshift(newFic||{...payload,id:Date.now()});
+      // reload all fics fresh from Supabase so display is always correct
+      fics=await loadFics();
+      fics.forEach(f=>{
+        if(!f.fandoms)f.fandoms=[];
+        if(!f.cover)f.cover='';
+        if(!f.review)f.review=null;
+      });
       showToast(`✦ "${title}" added to the shelf!`);
     }
     setSynced(); renderAll(); closeModal('add-modal'); clearAddForm();
