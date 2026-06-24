@@ -261,6 +261,9 @@ nav a:hover,nav a.active{color:var(--gold);background:rgba(201,168,76,.07);}
 .toast{position:fixed;bottom:1.35rem;right:1.35rem;background:var(--obsidian-light);border:1px solid var(--amethyst);color:var(--parchment);padding:.62rem 1.05rem;border-radius:6px;font-size:.84rem;z-index:300;transform:translateY(65px);opacity:0;transition:all .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:320px;}
 .toast.show{transform:translateY(0);opacity:1;}
 
+.btn-import-csv{background:rgba(107,63,160,.18);border:1px solid rgba(107,63,160,.32);color:var(--amethyst-light);padding:.42rem .85rem;border-radius:4px;cursor:pointer;font-family:'EB Garamond',serif;font-size:.9rem;transition:all .2s;width:100%;text-align:center;}
+.btn-import-csv:hover{background:rgba(107,63,160,.3);}
+
 @media(max-width:920px){.main-layout{grid-template-columns:1fr;}.sidebar{position:static;}.stat-divider{display:none;}}
 @media(max-width:600px){.header-inner{height:52px;}.hero{padding:2.5rem 1rem 2rem;}.fic-grid,.fandom-grid,.stats-page,.ship-list{grid-template-columns:1fr;}.form-row{grid-template-columns:1fr;}.modal{padding:1.05rem;}.btn-icon span{display:none;}}
 </style>
@@ -292,6 +295,7 @@ nav a:hover,nav a.active{color:var(--gold);background:rgba(201,168,76,.07);}
       <a onclick="showPage('stats')" id="nav-stats">Stats</a>
     </nav>
     <div class="header-actions">
+      <button class="btn-icon" onclick="openImportModal()">📥 <span>Import</span></button>
       <button class="btn-add" onclick="openAddModal()">+ Add Fic</button>
     </div>
   </div>
@@ -504,6 +508,40 @@ nav a:hover,nav a.active{color:var(--gold);background:rgba(201,168,76,.07);}
     <div class="modal-actions" style="margin-top:1rem;">
       <button class="btn-cancel" onclick="closeModal('confirm-modal')">Keep it</button>
       <button class="btn-danger" style="margin-right:0" onclick="deleteFic()">Yes, Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NOTION IMPORT -->
+<div class="modal-overlay" id="import-modal" onclick="closeModalOutside(event,'import-modal')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title">📥 Import from Notion</div>
+    <div style="background:var(--obsidian);border:1px solid var(--border);border-radius:6px;padding:1rem 1.1rem;margin-bottom:1rem;">
+      <p style="font-size:.85rem;color:var(--parchment-dim);line-height:1.6;margin-bottom:.75rem;">
+        Export your Notion tracker as a CSV file, then upload it here. The importer will automatically find all rows tagged as <strong style="color:var(--amethyst-light)">Fanfiction</strong> and add them to your shelf.
+      </p>
+      <p style="font-size:.8rem;color:var(--parchment-dim);line-height:1.6;">
+        It will import: <span style="color:var(--parchment)">Title, Author, AO3 Link, Word Count, Status, Spice Scale, Star Rating and Reread.</span>
+      </p>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fandom <span style="font-size:.63rem;font-family:'EB Garamond',serif;text-transform:none;letter-spacing:0;color:var(--parchment-dim)">— since Notion doesn't have a fandom column, type the fandom to assign to all imported fics (you can edit them individually after)</span></label>
+      <input class="form-input" id="import-fandom" placeholder="e.g. Good Omens, Various…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Upload Notion CSV</label>
+      <input type="file" id="import-csv-file" accept=".csv" style="display:none" onchange="previewCSV(event)">
+      <button class="btn-import-csv" onclick="document.getElementById('import-csv-file').click()">Choose CSV File</button>
+      <div id="import-preview" style="margin-top:.75rem;display:none;">
+        <div id="import-preview-text" style="font-size:.82rem;color:var(--parchment-dim);margin-bottom:.5rem;"></div>
+        <div style="background:var(--obsidian);border:1px solid var(--border);border-radius:4px;max-height:160px;overflow-y:auto;padding:.6rem .75rem;">
+          <div id="import-preview-list" style="font-size:.78rem;color:var(--parchment-dim);font-family:'JetBrains Mono',monospace;line-height:1.8;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('import-modal')">Cancel</button>
+      <button class="btn-save" id="import-confirm-btn" style="display:none" onclick="confirmImport()">Import Fics</button>
     </div>
   </div>
 </div>
@@ -1035,6 +1073,183 @@ function openFicLink(e,link){if(link&&link!=='#'&&link!=='')window.open(link,'_b
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+
+// ══════════════════════════════════════════
+// NOTION CSV IMPORT
+// ══════════════════════════════════════════
+let parsedImportRows = [];
+
+function openImportModal() {
+  parsedImportRows = [];
+  document.getElementById('import-fandom').value = '';
+  document.getElementById('import-csv-file').value = '';
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('import-confirm-btn').style.display = 'none';
+  document.getElementById('import-modal').classList.add('open');
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  const headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = splitCSVLine(line);
+    const row = {};
+    headers.forEach((h, i) => { row[h.trim()] = (vals[i]||'').trim(); });
+    return row;
+  });
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQuotes = !inQuotes; }
+    else if (ch === ',' && !inQuotes) { result.push(cur); cur = ''; }
+    else { cur += ch; }
+  }
+  result.push(cur);
+  return result;
+}
+
+function countChilis(str) {
+  if (!str) return 0;
+  // count chili pepper emojis
+  const matches = str.match(/🌶️/g);
+  return matches ? matches.length : 0;
+}
+
+function parseStars(str) {
+  if (!str) return 0;
+  // handle ★★★★★ style or numeric like 4 or 4/5
+  const numMatch = str.match(/(\d)/);
+  if (numMatch) return Math.min(5, parseInt(numMatch[1]));
+  const starMatch = str.match(/★/g);
+  return starMatch ? starMatch.length : 0;
+}
+
+function mapStatus(str) {
+  if (!str) return 'TBR';
+  const s = str.toLowerCase();
+  if (s.includes('finish') || s.includes('read') && s.includes('done')) return 'Finished';
+  if (s.includes('dnf')) return 'DNF';
+  if (s.includes('reading')) return 'Reading';
+  if (s.includes('tbr') || s.includes('to be read')) return 'TBR';
+  if (s.includes('finish')) return 'Finished';
+  return 'TBR';
+}
+
+function previewCSV(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = parseCSV(e.target.result);
+
+    // find the genre column — it has a special unicode name
+    const genreCol = Object.keys(rows[0]||{}).find(k =>
+      k.includes('Categories') || k.includes('Genres') || k.includes('⟡') || k.toLowerCase().includes('genre')
+    );
+
+    // filter to fanfiction only
+    parsedImportRows = rows.filter(row => {
+      if (!row['Title'] || row['Title'].trim() === '') return false;
+      if (genreCol && row[genreCol]) {
+        return row[genreCol].toLowerCase().includes('fanfiction');
+      }
+      // if no genre col found, include all rows with a title
+      return true;
+    });
+
+    const preview = document.getElementById('import-preview');
+    const previewText = document.getElementById('import-preview-text');
+    const previewList = document.getElementById('import-preview-list');
+
+    if (!parsedImportRows.length) {
+      previewText.textContent = 'No fanfiction rows found. Make sure your genre column contains "Fanfiction".';
+      previewList.innerHTML = '';
+      document.getElementById('import-confirm-btn').style.display = 'none';
+    } else {
+      previewText.innerHTML = `Found <strong style="color:var(--gold-light)">${parsedImportRows.length} fanfiction fic${parsedImportRows.length!==1?'s':''}</strong> ready to import:`;
+      previewList.innerHTML = parsedImportRows.slice(0, 20).map(r =>
+        `<div>✦ ${r['Title']||'Untitled'} ${r['Author']?`<span style="color:var(--amethyst-light)">by ${r['Author']}</span>`:''}  </div>`
+      ).join('') + (parsedImportRows.length > 20 ? `<div style="color:var(--gold);margin-top:.3rem;">…and ${parsedImportRows.length - 20} more</div>` : '');
+      document.getElementById('import-confirm-btn').style.display = 'block';
+    }
+    preview.style.display = 'block';
+  };
+  reader.readAsText(file);
+}
+
+async function confirmImport() {
+  if (!parsedImportRows.length) return;
+  const fandom = document.getElementById('import-fandom').value.trim() || 'Unknown';
+
+  // find column names flexibly
+  const sampleRow = parsedImportRows[0];
+  const cols = Object.keys(sampleRow);
+  const aoCol = cols.find(k => k.toLowerCase().includes('ao3') || k.toLowerCase().includes('link'));
+  const wordCol = cols.find(k => k.toLowerCase().includes('word'));
+  const statusCol = cols.find(k => k.toLowerCase().includes('status'));
+  const spiceCol = cols.find(k => k.includes('🌶️') || k.toLowerCase().includes('spice'));
+  const ratingCol = cols.find(k => k.includes('★') || k.toLowerCase().includes('rating'));
+  const rereadCol = cols.find(k => k.toLowerCase().includes('reread'));
+  const authorCol = cols.find(k => k.toLowerCase().includes('author'));
+
+  const toInsert = parsedImportRows.map(row => {
+    const stars = parseStars(row[ratingCol]||'');
+    const chili = countChilis(row[spiceCol]||'');
+    const reread = row[rereadCol] && (row[rereadCol].toLowerCase()==='yes'||row[rereadCol]==='true'||row[rereadCol]==='✓') ? 1 : 0;
+    const hasReview = stars > 0 || chili > 0 || reread > 0;
+    return {
+      title: row['Title']||'Untitled',
+      author: row[authorCol]||'Unknown',
+      fandoms: [fandom],
+      ship: '',
+      status: mapStatus(row[statusCol]||''),
+      words: parseInt((row[wordCol]||'').replace(/[^0-9]/g,''))||0,
+      chapters: '',
+      summary: '',
+      tags: [],
+      cover: '',
+      link: row[aoCol]||'',
+      favourite: false,
+      date_added: Date.now(),
+      review: hasReview ? {stars, chili, text:'', quote:'', rereads:reread} : null,
+    };
+  });
+
+  setSyncing();
+  closeModal('import-modal');
+  showToast(`Importing ${toInsert.length} fics… please wait`);
+
+  // insert in batches of 20 to avoid timeouts
+  const batchSize = 20;
+  let imported = 0;
+  try {
+    for (let i = 0; i < toInsert.length; i += batchSize) {
+      const batch = toInsert.slice(i, i + batchSize);
+      await dbFetch(API, {
+        method: 'POST',
+        headers: {'Prefer': 'return=minimal'},
+        body: JSON.stringify(batch)
+      });
+      imported += batch.length;
+    }
+    // reload fresh from Supabase
+    fics = await loadFics();
+    fics.forEach(f => {
+      if (!f.fandoms) f.fandoms = [];
+      if (!f.cover) f.cover = '';
+      if (!f.review) f.review = null;
+    });
+    setSynced(); renderAll();
+    showToast(`✦ Successfully imported ${imported} fics!`);
+  } catch(err) {
+    console.error(err);
+    showToast('Import failed. Check your CSV and try again.');
+    setSyncError();
+  }
+}
 
 init();
 </script>
