@@ -1519,6 +1519,70 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
 
+// ══════════════════════════════════════════
+// FIC PICKER
+// ══════════════════════════════════════════
+let pickerFilters={status:'any',stars:'any',spice:'any'};
+
+function setPickerFilter(type,val,el){
+  pickerFilters[type]=val;
+  el.closest('.filter-tags').querySelectorAll('.filter-tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function updatePickerFandomSelect(){
+  const sel=document.getElementById('picker-fandom-select');
+  if(!sel)return;
+  const fandoms=[...new Set(visibleFics().flatMap(f=>f.fandoms||[]))].sort();
+  const current=sel.value;
+  sel.innerHTML='<option value="any">Any Fandom</option>'+fandoms.map(f=>`<option value="${f}">${f}</option>`).join('');
+  if(current&&fandoms.includes(current))sel.value=current;
+}
+
+function spinPicker(){
+  const btn=document.getElementById('picker-spin-btn');
+  btn.classList.add('spinning');
+  setTimeout(()=>btn.classList.remove('spinning'),600);
+
+  const fandomFilter=document.getElementById('picker-fandom-select')?.value||'any';
+  let pool=visibleFics().filter(f=>{
+    if(pickerFilters.status!=='any'&&f.status!==pickerFilters.status)return false;
+    if(fandomFilter!=='any'&&!(f.fandoms||[]).includes(fandomFilter))return false;
+    if(pickerFilters.stars!=='any'){
+      const min=parseInt(pickerFilters.stars);
+      if(!f.review||f.review.stars<min)return false;
+    }
+    if(pickerFilters.spice!=='any'){
+      const max=parseInt(pickerFilters.spice);
+      if(f.review&&(f.review.chili||0)>max)return false;
+    }
+    return true;
+  });
+
+  const result=document.getElementById('picker-result');
+  const empty=document.getElementById('picker-empty');
+
+  if(!pool.length){
+    result.style.display='none';
+    empty.style.display='block';
+    return;
+  }
+
+  // pick random
+  const pick=pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById('picker-card-wrap').innerHTML=cardHTML(pick);
+  result.style.display='block';
+  empty.style.display='none';
+  result.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// update picker fandom list when page is shown
+const _origShowPage=showPage;
+function showPage(page){
+  _origShowPage(page);
+  if(page==='picker')updatePickerFandomSelect();
+}
+
 init();
 </script>
 </body>
