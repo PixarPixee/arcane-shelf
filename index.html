@@ -324,6 +324,22 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
 .toast{position:fixed;bottom:1.35rem;right:1.35rem;background:var(--obsidian-light);border:1px solid var(--amethyst);color:var(--parchment);padding:.62rem 1.05rem;border-radius:6px;font-size:.84rem;z-index:300;transform:translateY(65px);opacity:0;transition:all .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:320px;}
 .toast.show{transform:translateY(0);opacity:1;}
 
+/* ── FIC PICKER ── */
+.picker-filters{display:flex;flex-wrap:wrap;gap:1.5rem;margin-bottom:2rem;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.4rem;}
+.picker-filter-group{display:flex;flex-direction:column;gap:.5rem;}
+.picker-filter-label{font-family:'Cinzel Decorative',serif;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
+.picker-btn-wrap{text-align:center;margin-bottom:2rem;}
+.picker-spin-btn{font-family:'Cinzel Decorative',serif;font-size:.8rem;background:linear-gradient(135deg,var(--amethyst),var(--garnet));color:var(--parchment);border:none;padding:.85rem 2.5rem;border-radius:6px;cursor:pointer;letter-spacing:.08em;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 20px rgba(107,63,160,.3);}
+.picker-spin-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(107,63,160,.45);}
+.picker-spin-btn:active{transform:scale(.97);}
+.picker-spin-btn.spinning{animation:spin-pulse .6s ease-in-out;}
+@keyframes spin-pulse{0%{transform:scale(1);}50%{transform:scale(.95);opacity:.7;}100%{transform:scale(1);}}
+.picker-result-label{font-family:'Cinzel Decorative',serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:1.25rem;opacity:.8;}
+.picker-card-wrap{max-width:480px;margin:0 auto;}
+.picker-again-wrap{text-align:center;margin-top:1.25rem;}
+.picker-again-btn{background:none;border:1px solid var(--border);color:var(--parchment-dim);padding:.42rem .95rem;border-radius:4px;cursor:pointer;font-family:'EB Garamond',serif;font-size:.92rem;transition:all .2s;}
+.picker-again-btn:hover{border-color:var(--gold);color:var(--gold);}
+
 /* ── RESPONSIVE ── */
 @media(max-width:920px){
   .main-layout{grid-template-columns:1fr;}
@@ -379,6 +395,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
       <a onclick="showPage('tags')" id="nav-tags">Tags</a>
       <a onclick="showPage('favourites')" id="nav-favourites">Favourites</a>
       <a onclick="showPage('stats')" id="nav-stats">Stats</a>
+      <a onclick="showPage('picker')" id="nav-picker">🎲 Pick</a>
     </nav>
     <div class="header-actions">
       <span class="owner-badge" id="owner-badge" style="display:none">Owner</span>
@@ -399,6 +416,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   <a onclick="showPage('tags');closeMobileNav()" id="mnav-tags">🏷️ Tags</a>
   <a onclick="showPage('favourites');closeMobileNav()" id="mnav-favourites">♥ Favourites</a>
   <a onclick="showPage('stats');closeMobileNav()" id="mnav-stats">📊 Stats</a>
+  <a onclick="showPage('picker');closeMobileNav()" id="mnav-picker">🎲 Fic Picker</a>
   <div class="mobile-nav-divider"></div>
   <div class="mobile-nav-actions">
     <button class="btn-add owner-only" id="mobile-add-btn" style="display:none;width:100%;padding:.5rem" onclick="openAddModal();closeMobileNav()">+ Add Fic</button>
@@ -522,6 +540,63 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   <h1 class="page-title">Statistics</h1>
   <p class="page-sub">A view from inside the archive.</p>
   <div class="stats-page" id="stats-page"></div>
+</div>
+
+<!-- PICKER -->
+<div id="page-picker" class="page">
+  <h1 class="page-title">🎲 Fic Picker</h1>
+  <p class="page-sub">Can't decide what to read? Let the archive choose for you.</p>
+
+  <div class="picker-filters">
+    <div class="picker-filter-group">
+      <div class="picker-filter-label">Status</div>
+      <div class="filter-tags">
+        <span class="filter-tag active" onclick="setPickerFilter('status','any',this)">Any</span>
+        <span class="filter-tag" onclick="setPickerFilter('status','Finished',this)">Finished</span>
+        <span class="filter-tag" onclick="setPickerFilter('status','TBR',this)">TBR</span>
+        <span class="filter-tag" onclick="setPickerFilter('status','Reading',this)">Reading</span>
+      </div>
+    </div>
+    <div class="picker-filter-group">
+      <div class="picker-filter-label">Fandom</div>
+      <select class="sort-select" id="picker-fandom-select" style="font-size:.82rem;padding:.3rem .6rem">
+        <option value="any">Any Fandom</option>
+      </select>
+    </div>
+    <div class="picker-filter-group">
+      <div class="picker-filter-label">Min Star Rating</div>
+      <div class="filter-tags">
+        <span class="filter-tag active" onclick="setPickerFilter('stars','any',this)">Any</span>
+        <span class="filter-tag" onclick="setPickerFilter('stars','3',this)">★★★+</span>
+        <span class="filter-tag" onclick="setPickerFilter('stars','4',this)">★★★★+</span>
+        <span class="filter-tag" onclick="setPickerFilter('stars','5',this)">★★★★★</span>
+      </div>
+    </div>
+    <div class="picker-filter-group">
+      <div class="picker-filter-label">Max Spice</div>
+      <div class="filter-tags">
+        <span class="filter-tag active" onclick="setPickerFilter('spice','any',this)">Any</span>
+        <span class="filter-tag" onclick="setPickerFilter('spice','1',this)">🌶️</span>
+        <span class="filter-tag" onclick="setPickerFilter('spice','2',this)">🌶️🌶️</span>
+        <span class="filter-tag" onclick="setPickerFilter('spice','3',this)">🌶️🌶️🌶️</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="picker-btn-wrap">
+    <button class="picker-spin-btn" onclick="spinPicker()" id="picker-spin-btn">
+      <span id="picker-btn-text">✦ Pick a Fic for Me</span>
+    </button>
+  </div>
+
+  <div id="picker-result" style="display:none">
+    <div class="picker-result-label">The archive has chosen…</div>
+    <div id="picker-card-wrap"></div>
+    <div class="picker-again-wrap">
+      <button class="picker-again-btn" onclick="spinPicker()">Pick Again 🎲</button>
+    </div>
+  </div>
+  <div id="picker-empty" style="display:none" class="empty-state">No fics match your filters. Try broadening them!</div>
 </div>
 
 <!-- FIC DETAIL OVERLAY -->
@@ -826,17 +901,16 @@ function closeMobileNav(){
   document.getElementById('mobile-nav-drawer').classList.remove('open');
 }
 
-// swipe navigation
+// swipe navigation — swipe right only to go back one page
 document.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX;},{passive:true});
 document.addEventListener('touchend',e=>{
+  // ignore swipes inside modals or detail overlay
+  if(document.querySelector('.modal-overlay.open')||document.getElementById('fic-detail-overlay').classList.contains('open'))return;
   const diff=e.changedTouches[0].screenX-touchStartX;
-  if(Math.abs(diff)<60)return;
-  const pages=['home','fandoms','ships','tags','favourites','stats'];
-  const current=pages.findIndex(p=>document.getElementById('page-'+p).classList.contains('active'));
-  if(diff<-60&&current<pages.length-1)showPage(pages[current+1]);
-  if(diff>60&&current>0)showPage(pages[current-1]);
-  // open mobile nav on swipe left from edge
-  if(diff<-80&&touchStartX>window.innerWidth-40)openMobileNav();
+  if(diff<80)return; // only swipe right (back), minimum 80px
+  const pages=['home','fandoms','ships','tags','favourites','stats','picker'];
+  const current=pages.findIndex(p=>document.getElementById('page-'+p)?.classList.contains('active'));
+  if(current>0)showPage(pages[current-1]);
 },{passive:true});
 
 // ══════════════════════════════════════════
@@ -1304,11 +1378,16 @@ function parseStars(str){
   return 0;
 }
 function mapStatus(str){
-  if(!str)return 'TBR';const s=str.toLowerCase();
-  if(s.includes('finish'))return 'Finished';
+  if(!str)return 'TBR';
+  const s=str.toLowerCase().trim();
+  if(s==='finished'||s==='finish'||s==='complete'||s==='completed'||s==='done'||s==='read')return 'Finished';
+  if(s==='dnf'||s==='did not finish'||s==='abandoned'||s==='dropped')return 'DNF';
+  if(s==='reading'||s==='currently reading'||s==='in progress'||s==='current')return 'Reading';
+  if(s==='tbr'||s==='to be read'||s==='want to read'||s==='unread'||s==='queued')return 'TBR';
+  // partial matches as fallback
+  if(s.includes('finish')||s.includes('complet')||s.includes('done'))return 'Finished';
   if(s.includes('dnf'))return 'DNF';
-  if(s==='reading'||s.includes('current'))return 'Reading';
-  if(s.includes('tbr')||s.includes('to be'))return 'TBR';
+  if(s.includes('reading')||s.includes('current'))return 'Reading';
   return 'TBR';
 }
 
