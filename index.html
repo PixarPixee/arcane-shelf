@@ -1352,17 +1352,48 @@ function openImportModal(){
 }
 
 function parseCSV(text){
-  const lines=text.split(/\r?\n/).filter(l=>l.trim());
-  // detect separator — tab or comma
-  const sep=lines[0].includes('\t')?'\t':',';
-  const headers=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).map(line=>{
-    const vals=sep==='\t'?line.split('\t'):splitCSVLine(line);
+  const lines=text.split(/\r?\n/);
+  // detect separator
+  const firstLine=lines[0]||'';
+  const sep=firstLine.includes('\t')?'\t':',';
+  const headers=firstLine.split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
+
+  // re-join multiline quoted cells then split into rows
+  const rows=[];
+  let cur='';
+  for(let i=1;i<lines.length;i++){
+    cur+=lines[i];
+    // count unescaped quotes — if even we have a complete row
+    const quoteCount=(cur.match(/"/g)||[]).length;
+    if(quoteCount%2===0){
+      if(cur.trim()) rows.push(cur);
+      cur='';
+    } else {
+      cur+='\n'; // multiline cell — keep joining
+    }
+  }
+  if(cur.trim()) rows.push(cur);
+
+  return rows.map(line=>{
+    const vals=sep==='\t'?splitTSVLine(line):splitCSVLine(line);
     const row={};
-    headers.forEach((h,i)=>{row[h]=(vals[i]||'').trim().replace(/^"|"$/g,'');});
+    headers.forEach((h,i)=>{row[h]=(vals[i]||'').trim().replace(/^"|"$/g,'').trim();});
     return row;
   });
 }
+
+function splitTSVLine(line){
+  // TSV with possible quoted fields
+  const result=[];let cur='',inQuotes=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){inQuotes=!inQuotes;}
+    else if(ch==='\t'&&!inQuotes){result.push(cur);cur='';}
+    else{cur+=ch;}
+  }
+  result.push(cur);return result;
+}
+
 function splitCSVLine(line){
   const result=[];let cur='',inQuotes=false;
   for(let i=0;i<line.length;i++){
@@ -1372,6 +1403,13 @@ function splitCSVLine(line){
     else{cur+=ch;}
   }
   result.push(cur);return result;
+}
+
+function cleanFandom(str){
+  // remove Notion relation URLs — extract just the name before the URL
+  if(!str)return '';
+  // format is "Name (https://...)" — grab just the name
+  return str.replace(/\s*\(https?:\/\/[^)]+\)/g,'').trim();
 }
 function countChilis(str){if(!str)return 0;const m=str.match(/🌶️/g);return m?m.length:0;}
 function parseStars(str){
@@ -1435,7 +1473,8 @@ async function confirmImport(){
   if(!parsedImportRows.length)return;
   const cols=Object.keys(parsedImportRows[0]);
   const aoCol=cols.find(k=>k==='AO3')||cols.find(k=>k.toLowerCase().includes('ao3'));
-  // match 'Word Count' exactly first, then fallback — avoid 'WC Formula'
+  // 'Word Count' column in Notion exports as formatted text like "102,016 Word Count"
+  // the clean number is in the last column that is purely numeric — find it
   const wordCol=cols.find(k=>k==='Word Count')||cols.find(k=>k.toLowerCase()==='word count')||cols.find(k=>k.toLowerCase().includes('word count'));
   const statusCol=cols.find(k=>k==='Status')||cols.find(k=>k.toLowerCase().includes('status'));
   const spiceCol=cols.find(k=>k.includes('🌶️')||k.toLowerCase().includes('spice'));
@@ -1456,9 +1495,15 @@ async function confirmImport(){
     const rereads=parseInt(row[rereadCol]||'0')||0;
     const hasReview=stars>0||chili>0||rereads>0||(notesCol&&row[notesCol]);
     const notes=notesCol?row[notesCol]||'':'';
-    // fandoms: split by comma if multiple
+    // word count — try clean column first, then strip non-numeric from formatted version
+    const rawWC=row[wordCol]||'';
+    // if it looks like "102,016 Word Count" extract just the digits
+    const wcMatch=rawWC.replace(/,/g,'').match(/\d+/);
+    const wordCount=wcMatch?parseInt(wcMatch[0]):0;
+
+    // fandoms — clean Notion relation URLs
     const fandomRaw=row[fandomCol]||'';
-    const fandoms=fandomRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    const fandoms=fandomRaw.split(',').map(s=>cleanFandom(s)).filter(Boolean);
     // favourite
     const favRaw=(row[favCol]||'').toLowerCase();
     const favourite=favRaw==='yes'||favRaw==='true'||favRaw==='✓'||favRaw==='checked';
@@ -1468,7 +1513,7 @@ async function confirmImport(){
       fandoms:fandoms.length?fandoms:['Unknown'],
       ship:row[shipCol]||'',
       status:mapStatus(row[statusCol]||''),
-      words:parseInt((row[wordCol]||'').replace(/[^0-9]/g,''))||0,
+      words:wordCount,
       chapters:row[chaptersCol]||'',
       summary:row[summaryCol]||'',
       tags:(row[tagsCol]||'').split(',').map(t=>t.trim()).filter(Boolean),
