@@ -888,6 +888,7 @@ function showPage(page){
   const mn=document.getElementById('mnav-'+page);
   if(dn)dn.classList.add('active');
   if(mn)mn.classList.add('active');
+  if(page==='picker')updatePickerFandomSelect();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1576,13 +1577,7 @@ function spinPicker(){
   result.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-// update picker fandom list when page is shown
-const _origShowPage=showPage;
-function showPage(page){
-  _origShowPage(page);
-  if(page==='picker')updatePickerFandomSelect();
-}
-
+// update picker fandom list when page is shown — handled inside showPage directly
 init();
 </script>
 </body>
