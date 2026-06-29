@@ -1512,11 +1512,14 @@ function getChanges(row,existing){
 }
 
 async function confirmImport(){
-  if(!parsedImportRows.length)return;
-  const cols=Object.keys(parsedImportRows[0]);
+  if(!parsedImportRows.length&&!(document.getElementById('import-preview')._toUpdate?.length))return;
+
+  const preview=document.getElementById('import-preview');
+  const toUpdate=preview._toUpdate||[];
+  const allRows=[...parsedImportRows,...toUpdate.map(u=>u.row)];
+  const cols=allRows.length?Object.keys(allRows[0]):[];
+
   const aoCol=cols.find(k=>k==='AO3')||cols.find(k=>k.toLowerCase().includes('ao3'));
-  // 'Word Count' column in Notion exports as formatted text like "102,016 Word Count"
-  // the clean number is in the last column that is purely numeric — find it
   const wordCol=cols.find(k=>k==='Word Count')||cols.find(k=>k.toLowerCase()==='word count')||cols.find(k=>k.toLowerCase().includes('word count'));
   const statusCol=cols.find(k=>k==='Status')||cols.find(k=>k.toLowerCase().includes('status'));
   const spiceCol=cols.find(k=>k.includes('🌶️')||k.toLowerCase().includes('spice'));
@@ -1531,24 +1534,19 @@ async function confirmImport(){
   const chaptersCol=cols.find(k=>k==='Chapters')||cols.find(k=>k.toLowerCase().includes('chapter'));
   const favCol=cols.find(k=>k==='Favorite?')||cols.find(k=>k.toLowerCase().includes('favorit')||k.toLowerCase().includes('favourit'));
 
-  const toInsert=parsedImportRows.map(row=>{
+  function buildPayload(row){
     const stars=parseStars(row[ratingCol]||'');
     const chili=countChilis(row[spiceCol]||'');
     const rereads=parseInt(row[rereadCol]||'0')||0;
-    const hasReview=stars>0||chili>0||rereads>0||(notesCol&&row[notesCol]);
     const notes=notesCol?row[notesCol]||'':'';
-    // word count — try clean column first, then strip non-numeric from formatted version
-    const rawWC=row[wordCol]||'';
-    // if it looks like "102,016 Word Count" extract just the digits
-    const wcMatch=rawWC.replace(/,/g,'').match(/\d+/);
-    const wordCount=wcMatch?parseInt(wcMatch[0]):0;
-
-    // fandoms — clean Notion relation URLs
+    const hasReview=stars>0||chili>0||rereads>0||notes;
     const fandomRaw=row[fandomCol]||'';
     const fandoms=fandomRaw.split(',').map(s=>cleanFandom(s)).filter(Boolean);
-    // favourite
     const favRaw=(row[favCol]||'').toLowerCase();
     const favourite=favRaw==='yes'||favRaw==='true'||favRaw==='✓'||favRaw==='checked';
+    const rawWC=row[wordCol]||'';
+    const wcMatch=rawWC.replace(/,/g,'').match(/\d+/);
+    const wordCount=wcMatch?parseInt(wcMatch[0]):0;
     return{
       title:row['Title']||'Untitled',
       author:row[authorCol]||'Unknown',
@@ -1562,29 +1560,56 @@ async function confirmImport(){
       cover:'',
       link:row[aoCol]||'',
       favourite,
-      date_added:Date.now(),
       review:hasReview?{stars,chili,text:notes,rereads}:null,
     };
-  });
+  }
 
   setSyncing();
   closeModal('import-modal');
-  showToast(`Importing ${toInsert.length} fics… please wait`);
+  const totalOps=parsedImportRows.length+toUpdate.length;
+  showToast(`Syncing ${totalOps} fic${totalOps!==1?'s':''}… please wait`);
 
-  const batchSize=20;let imported=0;
+  let added=0,updated=0;
   try{
-    for(let i=0;i<toInsert.length;i+=batchSize){
-      const batch=toInsert.slice(i,i+batchSize);
-      await dbFetch(API,{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(batch)});
-      imported+=batch.length;
+    // INSERT new fics in batches
+    if(parsedImportRows.length){
+      const toInsert=parsedImportRows.map(row=>({...buildPayload(row),date_added:Date.now()}));
+      const batchSize=20;
+      for(let i=0;i<toInsert.length;i+=batchSize){
+        await dbFetch(API,{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(toInsert.slice(i,i+batchSize))});
+        added+=Math.min(batchSize,toInsert.length-i);
+      }
     }
+
+    // UPDATE existing fics — only overwrite Notion fields, preserve website reviews
+    for(const{row,existing}of toUpdate){
+      const p=buildPayload(row);
+      const updatePayload={
+        status:p.status,
+        words:p.words||existing.words,
+        chapters:p.chapters||existing.chapters,
+        summary:p.summary||existing.summary,
+        tags:p.tags.length?p.tags:existing.tags,
+        ship:p.ship||existing.ship,
+        favourite:p.favourite||existing.favourite,
+        // review is intentionally NOT updated — preserves your personal ratings
+      };
+      const changed=Object.keys(updatePayload).some(k=>JSON.stringify(updatePayload[k])!==JSON.stringify(existing[k]));
+      if(changed){await updateFic(existing.id,updatePayload);updated++;}
+    }
+
     fics=await loadFics();
     fics.forEach(f=>{if(!f.fandoms)f.fandoms=[];if(!f.cover)f.cover='';if(!f.review)f.review=null;});
     setSynced();renderAll();
-    showToast(`✦ Successfully imported ${imported} fics!`);
+
+    let msg='✦ Sync complete!';
+    if(added)msg+=` ${added} added`;
+    if(updated)msg+=` · ${updated} updated`;
+    if(!added&&!updated)msg='✦ Everything already up to date!';
+    showToast(msg);
   }catch(err){
     console.error(err);
-    showToast('Import failed. Check your CSV and try again.');
+    showToast('Sync failed. Check your CSV and try again.');
     setSyncError();
   }
 }
