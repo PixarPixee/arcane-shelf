@@ -1538,8 +1538,8 @@ async function confirmImport(){
     const stars=parseStars(row[ratingCol]||'');
     const chili=countChilis(row[spiceCol]||'');
     const rereads=parseInt(row[rereadCol]||'0')||0;
-    const notes=notesCol?row[notesCol]||'':'';
-    const hasReview=stars>0||chili>0||rereads>0||notes;
+    const notes=(notesCol?row[notesCol]||'':'').trim();
+    const hasReview=stars>0||chili>0||rereads>0||notes!=='';
     const fandomRaw=row[fandomCol]||'';
     const fandoms=fandomRaw.split(',').map(s=>cleanFandom(s)).filter(Boolean);
     const favRaw=(row[favCol]||'').toLowerCase();
@@ -1581,45 +1581,29 @@ async function confirmImport(){
       }
     }
 
-    // UPDATE existing fics — always update Notion fields, only fill reviews if empty
+    // UPDATE existing fics — only update if status changed, import everything when it does
     for(const{row,existing}of toUpdate){
       const p=buildPayload(row);
+      const newStatus=p.status;
 
-      // always update these Notion-sourced fields
+      // only process if status actually changed
+      if(newStatus===existing.status) continue;
+
+      // status changed — update everything from Notion
       const updatePayload={
-        status:p.status,
+        status:newStatus,
         words:p.words||existing.words,
         chapters:p.chapters||existing.chapters,
         summary:p.summary||existing.summary,
         tags:p.tags.length?p.tags:existing.tags,
         ship:p.ship||existing.ship,
         favourite:p.favourite||existing.favourite,
+        // bring over review from Notion if it has data
+        review:p.review||existing.review,
       };
 
-      // only fill in review fields if not already set on the website
-      if(p.review){
-        const hasExistingReview=existing.review&&(
-          (existing.review.stars>0)||
-          (existing.review.chili>0)||
-          (existing.review.text&&existing.review.text.trim()!=='')||
-          (existing.review.rereads>0)
-        );
-        if(!hasExistingReview){
-          // no review on website yet — bring it over from Notion
-          updatePayload.review=p.review;
-        } else {
-          // review exists — only fill individual empty fields
-          const merged={...existing.review};
-          if(!merged.stars&&p.review.stars)merged.stars=p.review.stars;
-          if(!merged.chili&&p.review.chili)merged.chili=p.review.chili;
-          if((!merged.text||merged.text.trim()==='')&&p.review.text)merged.text=p.review.text;
-          if(!merged.rereads&&p.review.rereads)merged.rereads=p.review.rereads;
-          updatePayload.review=merged;
-        }
-      }
-
-      const changed=Object.keys(updatePayload).some(k=>JSON.stringify(updatePayload[k])!==JSON.stringify(existing[k]));
-      if(changed){await updateFic(existing.id,updatePayload);updated++;}
+      await updateFic(existing.id,updatePayload);
+      updated++;
     }
 
     fics=await loadFics();
