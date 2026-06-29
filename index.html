@@ -1437,36 +1437,78 @@ function previewCSV(event){
   const reader=new FileReader();
   reader.onload=e=>{
     const rows=parseCSV(e.target.result);
-    // get existing AO3 links for duplicate check
-    const existingLinks=new Set(fics.filter(f=>f.link&&f.link!=='').map(f=>f.link.trim().toLowerCase()));
 
-    // filter: must have a Title AND a Fandom value
-    parsedImportRows=rows.filter(row=>{
-      if(!row['Title']||row['Title'].trim()==='')return false;
-      if(!row['Fandom']||row['Fandom'].trim()==='')return false;
-      // duplicate check by AO3 link
+    // build lookup maps for duplicate/update detection
+    const existingByLink=new Map(fics.filter(f=>f.link&&f.link!=='').map(f=>[f.link.trim().toLowerCase(),f]));
+    const existingByTitleAuthor=new Map(fics.map(f=>[`${f.title.toLowerCase().trim()}|${(f.author||'').toLowerCase().trim()}`,f]));
+
+    parsedImportRows=[];
+    const toUpdate=[];
+    const toSkip=[];
+
+    rows.forEach(row=>{
+      if(!row['Title']||row['Title'].trim()==='')return;
+      if(!row['Fandom']||row['Fandom'].trim()==='')return;
+
       const link=(row['AO3']||'').trim().toLowerCase();
-      if(link&&existingLinks.has(link))return false;
-      return true;
+      const titleKey=`${(row['Title']||'').toLowerCase().trim()}|${(row['Authors']||'').toLowerCase().trim()}`;
+
+      const existing=link?existingByLink.get(link):existingByTitleAuthor.get(titleKey);
+
+      if(existing){
+        toUpdate.push({row,existing});
+      } else {
+        parsedImportRows.push(row);
+      }
     });
 
     const preview=document.getElementById('import-preview');
     const previewText=document.getElementById('import-preview-text');
     const previewList=document.getElementById('import-preview-list');
-    const skipped=rows.filter(r=>r['Title']&&r['Fandom']&&existingLinks.has((r['AO3']||'').trim().toLowerCase())).length;
 
-    if(!parsedImportRows.length){
-      previewText.innerHTML='No new fanfiction rows found. Either all are duplicates or the Fandom column is empty.';
+    // store updates for later
+    preview._toUpdate=toUpdate;
+
+    const newCount=parsedImportRows.length;
+    const updateCount=toUpdate.length;
+
+    if(!newCount&&!updateCount){
+      previewText.innerHTML='No new or updated fics found.';
       previewList.innerHTML='';
       document.getElementById('import-confirm-btn').style.display='none';
     } else {
-      previewText.innerHTML=`Found <strong style="color:var(--gold-light)">${parsedImportRows.length} fic${parsedImportRows.length!==1?'s':''}</strong> ready to import${skipped>0?` <span style="color:var(--parchment-dim)">(${skipped} duplicate${skipped!==1?'s':''} skipped)</span>`:''}:`;
-      previewList.innerHTML=parsedImportRows.slice(0,25).map(r=>`<div>✦ ${r['Title']} ${r['Authors']?`<span style="color:var(--amethyst-light)">by ${r['Authors']}</span>`:''}</div>`).join('')+(parsedImportRows.length>25?`<div style="color:var(--gold);margin-top:.3rem">…and ${parsedImportRows.length-25} more</div>`:'');
+      let summary=[];
+      if(newCount)summary.push(`<strong style="color:var(--gold-light)">${newCount} new fic${newCount!==1?'s':''}</strong> to add`);
+      if(updateCount)summary.push(`<strong style="color:var(--amethyst-light)">${updateCount} existing fic${updateCount!==1?'s':''}</strong> to update`);
+      previewText.innerHTML=summary.join(' · ')+':';
+
+      const newItems=parsedImportRows.slice(0,15).map(r=>`<div style="color:var(--sage-light)">✦ NEW: ${r['Title']} ${r['Authors']?`by ${r['Authors']}`:''}</div>`).join('');
+      const updateItems=toUpdate.slice(0,15).map(({row,existing})=>{
+        const changes=getChanges(row,existing);
+        return`<div style="color:var(--amethyst-light)">↻ UPDATE: ${existing.title}${changes?' <span style="color:var(--parchment-dim);font-size:.7rem">('+changes+')</span>':''}  </div>`;
+      }).join('');
+      const overflow=(newCount+updateCount)>30?`<div style="color:var(--gold);margin-top:.3rem">…and ${newCount+updateCount-30} more</div>`:'';
+      previewList.innerHTML=newItems+updateItems+overflow;
       document.getElementById('import-confirm-btn').style.display='block';
     }
     preview.style.display='block';
   };
   reader.readAsText(file);
+}
+
+function getChanges(row,existing){
+  const changes=[];
+  const newStatus=mapStatus(row['Status']||'');
+  if(newStatus&&newStatus!==existing.status)changes.push(`${existing.status}→${newStatus}`);
+  const cols=Object.keys(row);
+  const wordCol=cols.find(k=>k==='Word Count')||cols.find(k=>k.toLowerCase()==='word count')||cols.find(k=>k.toLowerCase().includes('word count'));
+  if(wordCol){
+    const rawWC=row[wordCol]||'';
+    const wcMatch=rawWC.replace(/,/g,'').match(/\d+/);
+    const newWords=wcMatch?parseInt(wcMatch[0]):0;
+    if(newWords&&newWords!==(existing.words||0))changes.push(`words updated`);
+  }
+  return changes.join(', ');
 }
 
 async function confirmImport(){
