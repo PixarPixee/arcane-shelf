@@ -1780,7 +1780,18 @@ function previewCSV(event){
       previewList.innerHTML='';
       document.getElementById('import-confirm-btn').style.display='none';
     } else {
-      const realUpdates=toUpdate.filter(({row,existing})=>mapStatus(row['Status']||'')!==existing.status);
+      // only show fics that will actually be updated
+      const realUpdates=toUpdate.filter(({row,existing})=>{
+        const newStatus=mapStatus(row['Status']||'');
+        const statusChanged=newStatus!==existing.status;
+        const cols=Object.keys(row);
+        const dateCol=cols.find(k=>k==='Date Finished')||cols.find(k=>k==='End Date')||cols.find(k=>k.toLowerCase().includes('date finish')||k.toLowerCase().includes('end date'));
+        const rawDate=(dateCol?row[dateCol]||'':'').trim();
+        let newDate=null;
+        if(rawDate){const d=new Date(rawDate);if(!isNaN(d))newDate=d.toISOString().split('T')[0];}
+        const dateChanged=newDate&&newDate!==(existing.date_finished||'');
+        return statusChanged||dateChanged;
+      });
       const skippedCount=toUpdate.length-realUpdates.length;
 
       previewText.innerHTML='Preview of changes:';
@@ -1913,15 +1924,17 @@ async function confirmImport(){
       }
     }
 
-    // UPDATE existing fics — only update if status changed, import everything when it does
+    // UPDATE existing fics — update if status changed OR date_finished is new
     for(const{row,existing}of toUpdate){
       const p=buildPayload(row);
       const newStatus=p.status;
+      const statusChanged=newStatus!==existing.status;
+      const dateChanged=p.date_finished&&p.date_finished!==(existing.date_finished||'');
 
-      // only process if status actually changed
-      if(newStatus===existing.status) continue;
+      // skip if nothing relevant changed
+      if(!statusChanged&&!dateChanged)continue;
 
-      // status changed — update everything from Notion
+      // build update payload
       const updatePayload={
         status:newStatus,
         words:p.words||existing.words,
