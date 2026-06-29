@@ -1477,18 +1477,34 @@ function previewCSV(event){
       previewList.innerHTML='';
       document.getElementById('import-confirm-btn').style.display='none';
     } else {
-      let summary=[];
-      if(newCount)summary.push(`<strong style="color:var(--gold-light)">${newCount} new fic${newCount!==1?'s':''}</strong> to add`);
-      if(updateCount)summary.push(`<strong style="color:var(--amethyst-light)">${updateCount} existing fic${updateCount!==1?'s':''}</strong> to update`);
-      previewText.innerHTML=summary.join(' · ')+':';
+      const realUpdates=toUpdate.filter(({row,existing})=>mapStatus(row['Status']||'')!==existing.status);
+      const skippedCount=toUpdate.length-realUpdates.length;
 
-      const newItems=parsedImportRows.slice(0,15).map(r=>`<div style="color:var(--sage-light)">✦ NEW: ${r['Title']} ${r['Authors']?`by ${r['Authors']}`:''}</div>`).join('');
-      const updateItems=toUpdate.slice(0,15).map(({row,existing})=>{
-        const changes=getChanges(row,existing);
-        return`<div style="color:var(--amethyst-light)">↻ UPDATE: ${existing.title}${changes?' <span style="color:var(--parchment-dim);font-size:.7rem">('+changes+')</span>':''}  </div>`;
-      }).join('');
-      const overflow=(newCount+updateCount)>30?`<div style="color:var(--gold);margin-top:.3rem">…and ${newCount+updateCount-30} more</div>`:'';
-      previewList.innerHTML=newItems+updateItems+overflow;
+      previewText.innerHTML='Preview of changes:';
+
+      let html='';
+
+      // show ALL updates first — no limit
+      if(realUpdates.length){
+        html+=`<div style="color:var(--amethyst-light);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.35rem;margin-top:.1rem">↻ ${realUpdates.length} update${realUpdates.length!==1?'s':''}</div>`;
+        html+=realUpdates.map(({row,existing})=>{
+          const newStatus=mapStatus(row['Status']||'');
+          return`<div style="color:var(--parchment);margin-bottom:.2rem">• ${existing.title} <span style="color:var(--amethyst-light);font-size:.75rem">${existing.status} → ${newStatus}</span></div>`;
+        }).join('');
+      }
+
+      // summarize new fics as just a count — no need to list them all
+      if(newCount){
+        if(realUpdates.length) html+=`<div style="height:1px;background:rgba(255,255,255,.06);margin:.6rem 0"></div>`;
+        html+=`<div style="color:var(--sage-light);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.35rem">✦ ${newCount} new fic${newCount!==1?'s':''} to add</div>`;
+      }
+
+      // show skipped count quietly
+      if(skippedCount){
+        html+=`<div style="color:var(--parchment-dim);font-size:.72rem;font-style:italic;margin-top:.4rem">${skippedCount} fic${skippedCount!==1?'s':''} unchanged — skipped</div>`;
+      }
+
+      previewList.innerHTML=html;
       document.getElementById('import-confirm-btn').style.display='block';
     }
     preview.style.display='block';
