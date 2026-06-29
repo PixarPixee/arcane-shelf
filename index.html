@@ -589,8 +589,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
         <div class="filter-tags">
           <span class="filter-tag active" onclick="setFilter('myrating','all',this)">All</span>
           <span class="filter-tag" onclick="setFilter('myrating','5',this)">★★★★★</span>
-          <span class="filter-tag" onclick="setFilter('myrating','4',this)">★★★★</span>
-          <span class="filter-tag" onclick="setFilter('myrating','3',this)">★★★</span>
+          <span class="filter-tag" onclick="setFilter('myrating','4',this)">★★★★+</span>
+          <span class="filter-tag" onclick="setFilter('myrating','3',this)">★★★+</span>
         </div>
       </div>
     </aside>
@@ -1285,7 +1285,7 @@ function getFiltered(){
     if(activeTagFilter&&!(f.tags||[]).map(t=>t.toLowerCase()).includes(activeTagFilter.toLowerCase()))return false;
     if(activeShipFilter&&f.ship!==activeShipFilter)return false;
     if(filters.status!=='all'&&f.status!==filters.status)return false;
-    if(filters.myrating!=='all'){const n=parseInt(filters.myrating);if(!f.review||(f.review.stars||0)<n)return false;}
+    if(filters.myrating!=='all'){const n=parseInt(filters.myrating);if(!f.review||(f.review.stars||0)!==n)return false;}
     return true;
   }).sort((a,b)=>{
     if(sortMode==='newest')return(b.date_added||0)-(a.date_added||0);
