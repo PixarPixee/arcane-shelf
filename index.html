@@ -1285,7 +1285,7 @@ function getFiltered(){
     if(activeTagFilter&&!(f.tags||[]).map(t=>t.toLowerCase()).includes(activeTagFilter.toLowerCase()))return false;
     if(activeShipFilter&&f.ship!==activeShipFilter)return false;
     if(filters.status!=='all'&&f.status!==filters.status)return false;
-    if(filters.myrating!=='all'){const n=parseInt(filters.myrating);if(!f.review||f.review.stars<n)return false;}
+    if(filters.myrating!=='all'){const n=parseInt(filters.myrating);if(!f.review||(f.review.stars||0)<n)return false;}
     return true;
   }).sort((a,b)=>{
     if(sortMode==='newest')return(b.date_added||0)-(a.date_added||0);
@@ -1803,7 +1803,14 @@ function previewCSV(event){
         html+=`<div style="color:var(--amethyst-light);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.35rem;margin-top:.1rem">↻ ${realUpdates.length} update${realUpdates.length!==1?'s':''}</div>`;
         html+=realUpdates.map(({row,existing})=>{
           const newStatus=mapStatus(row['Status']||'');
-          return`<div style="color:var(--parchment);margin-bottom:.2rem">• ${existing.title} <span style="color:var(--amethyst-light);font-size:.75rem">${existing.status} → ${newStatus}</span></div>`;
+          const statusChanged=newStatus!==existing.status;
+          const cols=Object.keys(row);
+          const dateCol=cols.find(k=>k==='Date Finished')||cols.find(k=>k==='End Date')||cols.find(k=>k.toLowerCase().includes('date finish'));
+          const rawDate=(dateCol?row[dateCol]||'':'').trim();
+          let changeNote='';
+          if(statusChanged)changeNote=`${existing.status} → ${newStatus}`;
+          else if(rawDate)changeNote=`date finished added`;
+          return`<div style="color:var(--parchment);margin-bottom:.2rem">• ${existing.title} <span style="color:var(--amethyst-light);font-size:.75rem">${changeNote}</span></div>`;
         }).join('');
       }
 
