@@ -365,6 +365,41 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
 .fotm-change-btn:hover{border-color:var(--gold);color:var(--gold);}
 .fotm-empty{text-align:center;padding:2rem;color:var(--parchment-dim);font-style:italic;}
 
+/* ── WRAPPED ── */
+.wrapped-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.3rem;margin-bottom:1.5rem;}
+.wrapped-card{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:1.3rem;position:relative;overflow:hidden;}
+.wrapped-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--amethyst),var(--gold));}
+.wrapped-card.full{grid-column:1/-1;}
+.wrapped-card.accent{border-color:rgba(201,168,76,.3);background:linear-gradient(135deg,rgba(107,63,160,.08),rgba(139,26,58,.05));}
+.wrapped-title{font-family:'Cinzel Decorative',serif;font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+.wrapped-big{font-family:'JetBrains Mono',monospace;font-size:2.8rem;color:var(--gold-light);line-height:1;}
+.wrapped-big-label{font-size:.76rem;color:var(--parchment-dim);margin-top:.25rem;}
+.wrapped-list{list-style:none;}
+.wrapped-list li{display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.84rem;color:var(--parchment-dim);}
+.wrapped-list li:last-child{border-bottom:none;}
+.wrapped-list li span{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--gold-light);}
+.wrapped-bar-chart{margin-top:.35rem;}
+.wrapped-bar-row{margin-bottom:.52rem;}
+.wrapped-bar-label{display:flex;justify-content:space-between;font-size:.7rem;color:var(--parchment-dim);margin-bottom:.2rem;}
+.wrapped-bar-label span{font-family:'JetBrains Mono',monospace;color:var(--gold-light);}
+.wrapped-bar-track{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.wrapped-bar-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+.wrapped-month-chart{display:flex;align-items:flex-end;gap:.3rem;height:120px;margin-top:.5rem;}
+.wrapped-month-col{display:flex;flex-direction:column;align-items:center;gap:.3rem;flex:1;}
+.wrapped-month-bar-wrap{flex:1;display:flex;align-items:flex-end;width:100%;}
+.wrapped-month-bar{width:100%;border-radius:3px 3px 0 0;transition:height .8s ease;min-height:2px;}
+.wrapped-month-label{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--parchment-dim);}
+.wrapped-month-num{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--gold-light);}
+.wrapped-fic-highlight{display:flex;gap:1rem;align-items:flex-start;}
+.wrapped-fic-cover{width:60px;height:80px;object-fit:cover;border-radius:4px;flex-shrink:0;}
+.wrapped-fic-cover-placeholder{width:60px;height:80px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;opacity:.4;}
+.wrapped-fic-info{flex:1;}
+.wrapped-fic-title{font-family:'EB Garamond',serif;font-size:1rem;font-weight:600;color:var(--parchment);margin-bottom:.15rem;}
+.wrapped-fic-author{font-size:.8rem;color:var(--parchment-dim);font-style:italic;margin-bottom:.3rem;}
+.wrapped-fic-meta{font-size:.7rem;color:var(--parchment-dim);font-family:'JetBrains Mono',monospace;}
+.wrapped-empty{text-align:center;padding:4rem 1rem;color:var(--parchment-dim);font-style:italic;}
+.wrapped-empty strong{color:var(--gold);font-style:normal;font-family:'Cinzel Decorative',serif;font-size:.7rem;display:block;margin-bottom:.5rem;}
+
 /* ── IMPORT ── */
 .btn-import-csv{background:rgba(107,63,160,.18);border:1px solid rgba(107,63,160,.32);color:var(--amethyst-light);padding:.42rem .85rem;border-radius:4px;cursor:pointer;font-family:'EB Garamond',serif;font-size:.9rem;transition:all .2s;width:100%;text-align:center;}
 .btn-import-csv:hover{background:rgba(107,63,160,.3);}
@@ -469,6 +504,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
       <a onclick="showPage('tags')" id="nav-tags">Tags</a>
       <a onclick="showPage('favourites')" id="nav-favourites">Favourites</a>
       <a onclick="showPage('stats')" id="nav-stats">Stats</a>
+      <a onclick="showPage('wrapped')" id="nav-wrapped">🎵 Wrapped</a>
       <a onclick="showPage('picker')" id="nav-picker">🎲 Pick</a>
     </nav>
     <div class="header-actions">
@@ -490,6 +526,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   <a onclick="showPage('tags');closeMobileNav()" id="mnav-tags">🏷️ Tags</a>
   <a onclick="showPage('favourites');closeMobileNav()" id="mnav-favourites">♥ Favourites</a>
   <a onclick="showPage('stats');closeMobileNav()" id="mnav-stats">📊 Stats</a>
+  <a onclick="showPage('wrapped');closeMobileNav()" id="mnav-wrapped">🎵 Wrapped</a>
   <a onclick="showPage('picker');closeMobileNav()" id="mnav-picker">🎲 Fic Picker</a>
   <div class="mobile-nav-divider"></div>
   <div class="mobile-nav-actions">
@@ -620,6 +657,18 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   <h1 class="page-title">Statistics</h1>
   <p class="page-sub">A view from inside the archive.</p>
   <div class="stats-page" id="stats-page"></div>
+</div>
+
+<!-- WRAPPED -->
+<div id="page-wrapped" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:.5rem;">
+    <div>
+      <h1 class="page-title">🎵 Reading Wrapped</h1>
+      <p class="page-sub" style="margin-bottom:0">Your fanfiction year in review.</p>
+    </div>
+    <div class="filter-tags" id="wrapped-year-tabs" style="gap:.4rem;"></div>
+  </div>
+  <div id="wrapped-content" style="margin-top:2rem;"></div>
 </div>
 
 <!-- PICKER -->
@@ -838,6 +887,17 @@ async function dbFetch(url,options={}){
 async function loadFics(){return dbFetch(`${API}?order=date_added.desc&select=*`);}
 async function insertFic(fic){return dbFetch(API,{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(fic)});}
 async function updateFic(id,fic){return dbFetch(`${API}?id=eq.${id}`,{method:'PATCH',headers:{'Prefer':'return=representation'},body:JSON.stringify(fic)});}
+
+// settings API
+const SETTINGS_API=`${SUPABASE_URL}/rest/v1/settings`;
+async function getSetting(key){
+  try{const r=await dbFetch(`${SETTINGS_API}?key=eq.${key}&select=value`);return r&&r[0]?r[0].value:null;}
+  catch(e){return null;}
+}
+async function setSetting(key,value){
+  try{await dbFetch(`${SETTINGS_API}?key=eq.${key}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({value:String(value)})});}
+  catch(e){console.error('setSetting error',e);}
+}
 async function deleteFicDB(id){return dbFetch(`${API}?id=eq.${id}`,{method:'DELETE'});}
 
 // ══════════════════════════════════════════
@@ -971,18 +1031,24 @@ function enterArchive(){
 // ══════════════════════════════════════════
 // FIC OF THE MONTH
 // ══════════════════════════════════════════
-const FOTM_KEY='arcane_shelf_fotm';
+let fotmId=null;
+let welcomeBio='A personal archive of beloved fanfiction — a curated collection of stories that have left a mark. Browse by fandom, ship, or tag, and let the archive choose something for you.';
 
-async function loadFotmId(){
-  try{
-    const res=await dbFetch(`${SUPABASE_URL}/rest/v1/fics?select=id&order=date_added.desc&limit=1`);
-    // use a dedicated supabase row or localStorage
-  }catch(e){}
-  return localStorage.getItem(FOTM_KEY)||null;
+async function loadSettings(){
+  const [fid,bio]=await Promise.all([getSetting('fotm_id'),getSetting('welcome_bio')]);
+  if(fid)fotmId=fid;
+  if(bio&&bio.trim())welcomeBio=bio;
+  // update welcome bio text
+  const bioEl=document.getElementById('welcome-bio');
+  if(bioEl)bioEl.textContent=welcomeBio;
 }
 
-function getFotmId(){return localStorage.getItem(FOTM_KEY)||null;}
-function setFotmId(id){localStorage.setItem(FOTM_KEY,String(id));}
+function getFotmId(){return fotmId;}
+
+async function setFotmId(id){
+  fotmId=String(id);
+  await setSetting('fotm_id',id);
+}
 
 function renderFotm(){
   const card=document.getElementById('fotm-card');
@@ -1054,8 +1120,8 @@ function renderFotmList(){
     </div>`).join('');
 }
 
-function selectFotm(id){
-  setFotmId(id);
+async function selectFotm(id){
+  await setFotmId(id);
   renderFotm();
   closeModal('fotm-modal');
   showToast('✦ Fic of the Month updated!');
@@ -1074,7 +1140,7 @@ function setSyncError(){document.getElementById('sync-dot').className='sync-dot 
 async function init(){
   checkSavedAuth();
   try{
-    fics=await loadFics();
+    [fics]=await Promise.all([loadFics(),loadSettings()]);
     fics.forEach(f=>{
       if(!f.fandoms)f.fandoms=[];
       if(!f.cover)f.cover='';
@@ -1123,6 +1189,7 @@ function showPage(page){
   if(dn)dn.classList.add('active');
   if(mn)mn.classList.add('active');
   if(page==='picker')updatePickerFandomSelect();
+  if(page==='wrapped')renderWrapped();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1143,7 +1210,7 @@ document.addEventListener('touchend',e=>{
   if(document.querySelector('.modal-overlay.open')||document.getElementById('fic-detail-overlay').classList.contains('open'))return;
   const diff=e.changedTouches[0].screenX-touchStartX;
   if(diff<80)return; // only swipe right (back), minimum 80px
-  const pages=['home','fandoms','ships','tags','favourites','stats','picker'];
+  const pages=['home','fandoms','ships','tags','favourites','stats','wrapped','picker'];
   const current=pages.findIndex(p=>document.getElementById('page-'+p)?.classList.contains('active'));
   if(current>0)showPage(pages[current-1]);
 },{passive:true});
@@ -1785,6 +1852,7 @@ async function confirmImport(){
   const notesCol=cols.find(k=>k==='My Notes')||cols.find(k=>k.toLowerCase().includes('note'));
   const chaptersCol=cols.find(k=>k==='Chapters')||cols.find(k=>k.toLowerCase().includes('chapter'));
   const favCol=cols.find(k=>k==='Favorite?')||cols.find(k=>k.toLowerCase().includes('favorit')||k.toLowerCase().includes('favourit'));
+  const dateFinishedCol=cols.find(k=>k==='Date Finished')||cols.find(k=>k==='End Date')||cols.find(k=>k.toLowerCase().includes('date finish')||k.toLowerCase().includes('end date'));
 
   function buildPayload(row){
     const stars=parseStars(row[ratingCol]||'');
@@ -1799,6 +1867,16 @@ async function confirmImport(){
     const rawWC=row[wordCol]||'';
     const wcMatch=rawWC.replace(/,/g,'').match(/\d+/);
     const wordCount=wcMatch?parseInt(wcMatch[0]):0;
+    // date finished
+    const rawDate=(dateFinishedCol?row[dateFinishedCol]||'':'').trim();
+    let date_finished=null,year_finished=null;
+    if(rawDate){
+      const d=new Date(rawDate);
+      if(!isNaN(d)){
+        date_finished=d.toISOString().split('T')[0]; // YYYY-MM-DD
+        year_finished=d.getFullYear();
+      }
+    }
     return{
       title:row['Title']||'Untitled',
       author:row[authorCol]||'Unknown',
@@ -1812,6 +1890,8 @@ async function confirmImport(){
       cover:'',
       link:row[aoCol]||'',
       favourite,
+      date_finished,
+      year_finished,
       review:hasReview?{stars,chili,text:notes,rereads}:null,
     };
   }
@@ -1850,7 +1930,8 @@ async function confirmImport(){
         tags:p.tags.length?p.tags:existing.tags,
         ship:p.ship||existing.ship,
         favourite:p.favourite||existing.favourite,
-        // bring over review from Notion if it has data
+        date_finished:p.date_finished||existing.date_finished,
+        year_finished:p.year_finished||existing.year_finished,
         review:p.review||existing.review,
       };
 
@@ -1896,8 +1977,234 @@ function closeModalOutside(e,id){if(e.target===document.getElementById(id))close
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
 
 // ══════════════════════════════════════════
-// FIC PICKER
+// READING WRAPPED
 // ══════════════════════════════════════════
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let wrappedYear=new Date().getFullYear();
+
+function parseFinishedYear(f){
+  if(f.year_finished)return parseInt(f.year_finished);
+  if(f.date_finished){
+    const d=new Date(f.date_finished);
+    if(!isNaN(d))return d.getFullYear();
+  }
+  return null;
+}
+
+function parseFinishedMonth(f){
+  if(f.date_finished){
+    const d=new Date(f.date_finished);
+    if(!isNaN(d))return d.getMonth(); // 0-11
+  }
+  return null;
+}
+
+function renderWrapped(){
+  const finished=visibleFics().filter(f=>f.status==='Finished');
+  // get all available years
+  const years=[...new Set(finished.map(f=>parseFinishedYear(f)).filter(Boolean))].sort((a,b)=>b-a);
+
+  // year tabs
+  const tabsEl=document.getElementById('wrapped-year-tabs');
+  if(!years.length){
+    tabsEl.innerHTML='';
+    document.getElementById('wrapped-content').innerHTML=`<div class="wrapped-empty"><strong>No Data Yet</strong>Your finished fics need a date finished to appear here.<br>Make sure your Notion tracker has End Date filled in and re-import!</div>`;
+    return;
+  }
+
+  // ensure selected year is valid
+  if(!years.includes(wrappedYear))wrappedYear=years[0];
+  tabsEl.innerHTML=years.map(y=>`<span class="filter-tag ${y===wrappedYear?'active':''}" onclick="setWrappedYear(${y},this)">${y}</span>`).join('');
+
+  const yearFics=finished.filter(f=>parseFinishedYear(f)===wrappedYear);
+
+  if(!yearFics.length){
+    document.getElementById('wrapped-content').innerHTML=`<div class="wrapped-empty"><strong>${wrappedYear}</strong>No finished fics recorded for this year yet.</div>`;
+    return;
+  }
+
+  // compute stats
+  const totalWords=yearFics.reduce((s,f)=>s+(f.words||0),0);
+  const avgWords=Math.round(totalWords/yearFics.length);
+  const longestFic=yearFics.reduce((a,b)=>(b.words||0)>(a.words||0)?b:a,yearFics[0]);
+  const mostReread=yearFics.filter(f=>f.review?.rereads>0).sort((a,b)=>(b.review.rereads||0)-(a.review.rereads||0))[0];
+  const allFandoms=[...new Set(yearFics.flatMap(f=>f.fandoms||[]))];
+
+  // fandom counts
+  const fdomCounts={};
+  yearFics.forEach(f=>(f.fandoms||[]).forEach(fd=>{fdomCounts[fd]=(fdomCounts[fd]||0)+1;}));
+  const topFandoms=Object.entries(fdomCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxFdom=topFandoms[0]?.[1]||1;
+
+  // author counts
+  const authorCounts={};
+  yearFics.forEach(f=>{const a=f.author||'Unknown';authorCounts[a]=(authorCounts[a]||0)+1;});
+  const topAuthors=Object.entries(authorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // tag counts
+  const tagCounts={};
+  yearFics.forEach(f=>(f.tags||[]).forEach(t=>{tagCounts[t]=(tagCounts[t]||0)+1;}));
+  const topTags=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxTag=topTags[0]?.[1]||1;
+
+  // ship counts
+  const shipCounts={};
+  yearFics.filter(f=>f.ship).forEach(f=>{
+    f.ship.split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>{shipCounts[s]=(shipCounts[s]||0)+1;});
+  });
+  const topShips=Object.entries(shipCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // star distribution
+  const stars={5:0,4:0,3:0,2:0,1:0};
+  yearFics.filter(f=>f.review?.stars).forEach(f=>{stars[f.review.stars]=(stars[f.review.stars]||0)+1;});
+
+  // spice distribution
+  const spice={1:0,2:0,3:0,4:0,5:0};
+  yearFics.filter(f=>f.review?.chili).forEach(f=>{spice[f.review.chili]=(spice[f.review.chili]||0)+1;});
+  const maxSpice=Math.max(...Object.values(spice),1);
+
+  // monthly breakdown
+  const monthly=Array(12).fill(0);
+  yearFics.forEach(f=>{const m=parseFinishedMonth(f);if(m!==null)monthly[m]++;});
+  const maxMonth=Math.max(...monthly,1);
+
+  // top rated fic
+  const topRated=yearFics.filter(f=>f.review?.stars).sort((a,b)=>(b.review.stars||0)-(a.review.stars||0))[0];
+
+  document.getElementById('wrapped-content').innerHTML=`
+    <div class="wrapped-grid">
+      <!-- Hero stats -->
+      <div class="wrapped-card accent">
+        <div class="wrapped-title">Fics Finished in ${wrappedYear}</div>
+        <div class="wrapped-big">${yearFics.length}</div>
+        <div class="wrapped-big-label">fics completed</div>
+      </div>
+      <div class="wrapped-card">
+        <div class="wrapped-title">Words Consumed</div>
+        <div class="wrapped-big">${fmt(totalWords)}</div>
+        <div class="wrapped-big-label">total words · avg ${fmt(avgWords)}/fic</div>
+      </div>
+      <div class="wrapped-card">
+        <div class="wrapped-title">Fandoms Explored</div>
+        <div class="wrapped-big">${allFandoms.length}</div>
+        <div class="wrapped-big-label">unique fandoms</div>
+      </div>
+
+      <!-- Monthly chart -->
+      <div class="wrapped-card full">
+        <div class="wrapped-title">Fics Finished by Month</div>
+        <div class="wrapped-month-chart">
+          ${monthly.map((count,i)=>`
+            <div class="wrapped-month-col">
+              <div class="wrapped-month-num">${count||''}</div>
+              <div class="wrapped-month-bar-wrap">
+                <div class="wrapped-month-bar" style="height:${maxMonth?Math.round((count/maxMonth)*100):0}%;background:linear-gradient(to top,var(--amethyst),var(--amethyst-light))"></div>
+              </div>
+              <div class="wrapped-month-label">${MONTHS[i]}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Top fandoms -->
+      <div class="wrapped-card full">
+        <div class="wrapped-title">Top Fandoms</div>
+        <div class="wrapped-bar-chart">
+          ${topFandoms.map(([fd,ct])=>{const fc=getFandomColor(fd);return wBar(fd,ct,maxFdom,fc.color);}).join('')}
+        </div>
+      </div>
+
+      <!-- Top rated fic -->
+      ${topRated?`<div class="wrapped-card">
+        <div class="wrapped-title">Favourite Fic of ${wrappedYear}</div>
+        <div class="wrapped-fic-highlight">
+          ${topRated.cover?`<img class="wrapped-fic-cover" src="${topRated.cover}" alt="" onerror="this.style.display='none'">`:`<div class="wrapped-fic-cover-placeholder" style="background:linear-gradient(135deg,${getFandomColor(primaryFandom(topRated)).color},rgba(0,0,0,.6))">${getFandomGlyph(primaryFandom(topRated))}</div>`}
+          <div class="wrapped-fic-info">
+            <div class="wrapped-fic-title">${topRated.title}</div>
+            <div class="wrapped-fic-author">by ${topRated.author}</div>
+            <div class="wrapped-fic-meta">${'★'.repeat(topRated.review.stars)} · ${fmt(topRated.words||0)} words</div>
+          </div>
+        </div>
+      </div>`:''}
+
+      <!-- Longest fic -->
+      <div class="wrapped-card">
+        <div class="wrapped-title">Longest Fic Read</div>
+        <div class="wrapped-fic-highlight">
+          <div class="wrapped-fic-cover-placeholder" style="background:linear-gradient(135deg,${getFandomColor(primaryFandom(longestFic)).color},rgba(0,0,0,.6))">${getFandomGlyph(primaryFandom(longestFic))}</div>
+          <div class="wrapped-fic-info">
+            <div class="wrapped-fic-title">${longestFic.title}</div>
+            <div class="wrapped-fic-author">by ${longestFic.author}</div>
+            <div class="wrapped-fic-meta">${fmt(longestFic.words||0)} words</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Star ratings -->
+      <div class="wrapped-card">
+        <div class="wrapped-title">Your Ratings</div>
+        <div class="wrapped-bar-chart">
+          ${[5,4,3,2,1].map(s=>wBar('★'.repeat(s),stars[s]||0,yearFics.length,'#C9A84C')).join('')}
+        </div>
+      </div>
+
+      <!-- Spice scale -->
+      <div class="wrapped-card">
+        <div class="wrapped-title">Spice Distribution 🌶️</div>
+        <div class="wrapped-bar-chart">
+          ${[1,2,3,4,5].map(s=>wBar('🌶️'.repeat(s),spice[s]||0,maxSpice,'#8B1A3A')).join('')}
+        </div>
+      </div>
+
+      <!-- Top authors -->
+      <div class="wrapped-card">
+        <div class="wrapped-title">Most Read Authors</div>
+        <ul class="wrapped-list">
+          ${topAuthors.map(([a,ct])=>`<li>${a}<span>${ct} fic${ct!==1?'s':''}</span></li>`).join('')}
+        </ul>
+      </div>
+
+      <!-- Top tags -->
+      <div class="wrapped-card">
+        <div class="wrapped-title">Most Read Tags</div>
+        <div class="wrapped-bar-chart">
+          ${topTags.map(([t,ct])=>wBar(t,ct,maxTag,'#9B6FD0')).join('')}
+        </div>
+      </div>
+
+      <!-- Top ships -->
+      ${topShips.length?`<div class="wrapped-card">
+        <div class="wrapped-title">Top Ships</div>
+        <ul class="wrapped-list">
+          ${topShips.map(([s,ct])=>`<li><span style="color:var(--gold-light)">${s}</span><span>${ct} fic${ct!==1?'s':''}</span></li>`).join('')}
+        </ul>
+      </div>`:''}
+
+      <!-- Most reread -->
+      ${mostReread?`<div class="wrapped-card">
+        <div class="wrapped-title">Most Reread</div>
+        <div class="wrapped-fic-highlight">
+          <div class="wrapped-fic-cover-placeholder" style="background:linear-gradient(135deg,${getFandomColor(primaryFandom(mostReread)).color},rgba(0,0,0,.6))">${getFandomGlyph(primaryFandom(mostReread))}</div>
+          <div class="wrapped-fic-info">
+            <div class="wrapped-fic-title">${mostReread.title}</div>
+            <div class="wrapped-fic-author">by ${mostReread.author}</div>
+            <div class="wrapped-fic-meta">Read ${mostReread.review.rereads} times</div>
+          </div>
+        </div>
+      </div>`:''}
+    </div>`;
+}
+
+function setWrappedYear(year,el){
+  wrappedYear=year;
+  document.querySelectorAll('#wrapped-year-tabs .filter-tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderWrapped();
+}
+
+function wBar(label,val,max,color){
+  const pct=max?Math.round((val/max)*100):0;
+  return`<div class="wrapped-bar-row"><div class="wrapped-bar-label">${label}<span>${val}</span></div><div class="wrapped-bar-track"><div class="wrapped-bar-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
+}
 let pickerFilters={status:'any',stars:'any',spice:'any'};
 
 function setPickerFilter(type,val,el){
