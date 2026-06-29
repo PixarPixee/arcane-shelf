@@ -316,6 +316,55 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
 .favs-empty{text-align:center;padding:4.5rem 1rem;color:var(--parchment-dim);font-style:italic;}
 .favs-empty .heart{font-size:2.8rem;display:block;margin-bottom:.9rem;opacity:.28;}
 
+/* ── WELCOME PAGE ── */
+#welcome-screen{position:fixed;inset:0;background:var(--obsidian);z-index:997;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;overflow-y:auto;background:radial-gradient(ellipse at 50% 0%,rgba(107,63,160,.2) 0%,transparent 65%),radial-gradient(ellipse at 20% 100%,rgba(139,26,58,.12) 0%,transparent 55%);transition:opacity .3s ease;}
+#welcome-screen.visible{display:flex;}
+#welcome-screen::before{content:'✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦';position:absolute;top:1.5rem;left:0;right:0;text-align:center;font-size:.52rem;color:rgba(201,168,76,.2);letter-spacing:.55em;}
+#welcome-screen::after{content:'✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦';position:absolute;bottom:1.5rem;left:0;right:0;text-align:center;font-size:.52rem;color:rgba(201,168,76,.2);letter-spacing:.55em;}
+.welcome-inner{max-width:680px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.5rem;}
+.welcome-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.8rem,6vw,3.6rem);font-weight:900;color:var(--gold);line-height:1.15;text-shadow:0 0 60px rgba(201,168,76,.28);}
+.welcome-title span{color:var(--amethyst-light);}
+.welcome-divider{display:flex;align-items:center;gap:1rem;width:100%;max-width:400px;}
+.welcome-divider::before,.welcome-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.welcome-divider-glyph{color:var(--gold);opacity:.5;font-size:.8rem;}
+.welcome-bio{font-size:clamp(.95rem,2.5vw,1.15rem);color:var(--parchment-dim);line-height:1.75;font-style:italic;max-width:560px;}
+.welcome-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem 2rem;}
+.welcome-stat{display:flex;flex-direction:column;align-items:center;}
+.welcome-stat-num{font-family:'JetBrains Mono',monospace;font-size:clamp(1.4rem,3.5vw,2rem);color:var(--gold-light);line-height:1;}
+.welcome-stat-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--parchment-dim);margin-top:.15rem;}
+.welcome-stat-divider{width:1px;height:32px;background:var(--border);align-self:center;}
+.welcome-cr{width:100%;max-width:560px;}
+.welcome-cr-title{font-family:'Cinzel Decorative',serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.65rem;display:flex;align-items:center;gap:.6rem;}
+.welcome-cr-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.welcome-cr-fics{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;}
+.welcome-cr-chip{background:var(--card-bg);border:1px solid rgba(107,63,160,.3);border-radius:5px;padding:.45rem .75rem;font-size:.82rem;color:var(--parchment-dim);font-style:italic;}
+.welcome-cr-chip strong{color:var(--parchment);font-style:normal;}
+.welcome-enter-btn{font-family:'Cinzel Decorative',serif;font-size:.72rem;background:linear-gradient(135deg,var(--amethyst),var(--garnet));color:var(--parchment);border:none;padding:.85rem 2.5rem;border-radius:6px;cursor:pointer;letter-spacing:.1em;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 24px rgba(107,63,160,.35);margin-top:.5rem;}
+.welcome-enter-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(107,63,160,.5);}
+
+/* ── FIC OF THE MONTH ── */
+.fotm-section{max-width:1360px;margin:0 auto;padding:0 1.25rem;margin-top:2rem;}
+.fotm-card{background:var(--card-bg);border:1px solid var(--border-hover);border-radius:10px;overflow:hidden;position:relative;transition:box-shadow .2s;}
+.fotm-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.fotm-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--amethyst),var(--garnet),var(--gold));z-index:1;}
+.fotm-inner{display:grid;grid-template-columns:280px 1fr;min-height:200px;}
+.fotm-cover{width:100%;height:100%;object-fit:cover;display:block;min-height:200px;}
+.fotm-cover-placeholder{display:flex;align-items:center;justify-content:center;font-size:3rem;opacity:.2;min-height:200px;}
+.fotm-body{padding:1.5rem 1.75rem;}
+.fotm-eyebrow{font-family:'Cinzel Decorative',serif;font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:.65rem;display:flex;align-items:center;gap:.5rem;}
+.fotm-eyebrow::before{content:'✦';}
+.fotm-fandoms{display:flex;gap:.28rem;flex-wrap:wrap;margin-bottom:.4rem;}
+.fotm-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1rem,2.5vw,1.5rem);color:var(--parchment);line-height:1.2;margin-bottom:.2rem;}
+.fotm-author{font-size:.9rem;color:var(--parchment-dim);font-style:italic;margin-bottom:.75rem;}
+.fotm-review{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap;}
+.fotm-stars{font-size:1.1rem;color:var(--gold);}
+.fotm-chilis{font-size:1rem;}
+.fotm-notes{font-size:.92rem;color:var(--parchment-dim);line-height:1.6;font-style:italic;border-left:2px solid var(--amethyst);padding-left:.75rem;margin-bottom:1rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.fotm-actions{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;}
+.fotm-change-btn{background:none;border:1px solid var(--border);color:var(--parchment-dim);padding:.32rem .7rem;border-radius:4px;cursor:pointer;font-size:.75rem;font-family:'EB Garamond',serif;transition:all .2s;}
+.fotm-change-btn:hover{border-color:var(--gold);color:var(--gold);}
+.fotm-empty{text-align:center;padding:2rem;color:var(--parchment-dim);font-style:italic;}
+
 /* ── IMPORT ── */
 .btn-import-csv{background:rgba(107,63,160,.18);border:1px solid rgba(107,63,160,.32);color:var(--amethyst-light);padding:.42rem .85rem;border-radius:4px;cursor:pointer;font-family:'EB Garamond',serif;font-size:.9rem;transition:all .2s;width:100%;text-align:center;}
 .btn-import-csv:hover{background:rgba(107,63,160,.3);}
@@ -347,6 +396,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   .stat-divider{display:none;}
   .desktop-nav{display:none;}
   .hamburger-btn{display:block;}
+  .fotm-inner{grid-template-columns:1fr;}
+  .fotm-cover,.fotm-cover-placeholder{min-height:160px;max-height:200px;}
 }
 @media(max-width:600px){
   .header-inner{height:52px;}
@@ -367,15 +418,38 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   <div class="loading-dots"><span></span><span></span><span></span></div>
 </div>
 
-<!-- Password Screen -->
+<!-- Welcome Screen -->
+<div id="welcome-screen">
+  <div class="welcome-inner">
+    <div class="welcome-title">The <span>Arcane</span> Shelf</div>
+    <div class="welcome-divider"><span class="welcome-divider-glyph">✦</span></div>
+    <p class="welcome-bio" id="welcome-bio">A personal archive of beloved fanfiction — a curated collection of stories that have left a mark. Browse by fandom, ship, or tag, and let the archive choose something for you.</p>
+    <div class="welcome-stats">
+      <div class="welcome-stat"><span class="welcome-stat-num" id="w-total">0</span><span class="welcome-stat-label">Fics</span></div>
+      <div class="welcome-stat-divider"></div>
+      <div class="welcome-stat"><span class="welcome-stat-num" id="w-fandoms">0</span><span class="welcome-stat-label">Fandoms</span></div>
+      <div class="welcome-stat-divider"></div>
+      <div class="welcome-stat"><span class="welcome-stat-num" id="w-words">0</span><span class="welcome-stat-label">Words Read</span></div>
+      <div class="welcome-stat-divider"></div>
+      <div class="welcome-stat"><span class="welcome-stat-num" id="w-finished">0</span><span class="welcome-stat-label">Finished</span></div>
+    </div>
+    <div class="welcome-cr" id="welcome-cr-wrap" style="display:none">
+      <div class="welcome-cr-title">Currently Reading</div>
+      <div class="welcome-cr-fics" id="welcome-cr-fics"></div>
+    </div>
+    <button class="welcome-enter-btn" onclick="enterArchive()">✦ Enter the Archive ✦</button>
+  </div>
+</div>
+
+<!-- Password Screen (triggered by secret knock only) -->
 <div id="password-screen">
   <div class="pw-title">The <span>Arcane</span> Shelf</div>
-  <div class="pw-sub">Enter your password to access owner mode</div>
+  <div class="pw-sub">Owner access</div>
   <div class="pw-form">
     <input class="pw-input" type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()">
-    <button class="pw-btn" onclick="checkPassword()">Enter the Archive</button>
+    <button class="pw-btn" onclick="checkPassword()">Unlock</button>
     <div class="pw-error" id="pw-error">Incorrect password. Try again.</div>
-    <span class="pw-skip" onclick="continueAsVisitor()">Continue as visitor →</span>
+    <span class="pw-skip" onclick="closeModal('password-screen');document.getElementById('password-screen').classList.remove('visible');">Cancel</span>
   </div>
 </div>
 
@@ -428,7 +502,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
 <!-- HOME -->
 <div id="page-home" class="page active">
   <section class="hero">
-    <h1>The <em>Arcane</em> Shelf</h1>
+    <h1 ondblclick="heroSecretKnock()" style="cursor:default;user-select:none">The <em>Arcane</em> Shelf</h1>
     <p class="hero-sub">A personal archive of beloved fanfiction</p>
     <div class="stats-bar">
       <div class="stat"><span class="stat-num" id="h-total">0</span><span class="stat-label">Fics</span></div>
@@ -443,6 +517,12 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   <div class="currently-reading-section" style="margin-top:2rem;">
     <div class="section-eyebrow">Currently Reading</div>
     <div class="cr-scroll" id="cr-scroll"></div>
+  </div>
+
+  <!-- Fic of the Month -->
+  <div class="fotm-section">
+    <div class="section-eyebrow">Fic of the Month</div>
+    <div class="fotm-card" id="fotm-card"></div>
   </div>
   <div class="main-layout">
     <aside class="sidebar">
@@ -724,6 +804,21 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   </div>
 </div>
 
+<!-- MODAL: FIC OF THE MONTH PICKER -->
+<div class="modal-overlay" id="fotm-modal" onclick="closeModalOutside(event,'fotm-modal')">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-title">✦ Choose Fic of the Month</div>
+    <div class="form-group">
+      <label class="form-label">Search fics</label>
+      <input class="form-input" id="fotm-search" placeholder="Search by title or author…" oninput="renderFotmList()">
+    </div>
+    <div id="fotm-list" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('fotm-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -796,17 +891,15 @@ function checkPassword(){
     localStorage.setItem(OWNER_KEY,'true');
     isOwner=true;
     document.getElementById('password-screen').classList.remove('visible');
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-error').style.display='none';
     applyOwnerMode();
+    renderAll();
     showToast('✦ Welcome back!');
   } else {
     document.getElementById('pw-error').style.display='block';
     document.getElementById('pw-input').value='';
   }
-}
-
-function continueAsVisitor(){
-  isOwner=false;
-  document.getElementById('password-screen').classList.remove('visible');
 }
 
 function applyOwnerMode(){
@@ -824,6 +917,150 @@ function checkSavedAuth(){
   return false;
 }
 
+// secret knock — double click hero title
+let heroClickCount=0,heroClickTimer=null;
+function heroSecretKnock(){
+  heroClickCount++;
+  if(heroClickTimer)clearTimeout(heroClickTimer);
+  heroClickTimer=setTimeout(()=>{heroClickCount=0;},400);
+  if(heroClickCount>=2){
+    heroClickCount=0;
+    if(!isOwner){
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-error').style.display='none';
+      document.getElementById('password-screen').classList.add('visible');
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+// WELCOME PAGE
+// ══════════════════════════════════════════
+function renderWelcome(){
+  const vf=visibleFics();
+  const fandoms=new Set(vf.flatMap(f=>f.fandoms||[])).size;
+  const words=vf.reduce((s,f)=>s+(f.words||0),0);
+  const finished=vf.filter(f=>f.status==='Finished').length;
+
+  // animate stats
+  animNum('w-total',vf.length);
+  animNum('w-fandoms',fandoms);
+  document.getElementById('w-words').textContent=fmt(words);
+  animNum('w-finished',finished);
+
+  // currently reading teaser
+  const reading=vf.filter(f=>f.status==='Reading').slice(0,3);
+  const crWrap=document.getElementById('welcome-cr-wrap');
+  if(reading.length){
+    crWrap.style.display='block';
+    document.getElementById('welcome-cr-fics').innerHTML=reading.map(f=>`
+      <div class="welcome-cr-chip">
+        <strong>${f.title}</strong><br>
+        <span style="font-size:.75rem">by ${f.author}</span>
+      </div>`).join('');
+  } else {
+    crWrap.style.display='none';
+  }
+}
+
+function enterArchive(){
+  document.getElementById('welcome-screen').classList.remove('visible');
+  setTimeout(()=>document.getElementById('welcome-screen').style.display='none',300);
+}
+
+// ══════════════════════════════════════════
+// FIC OF THE MONTH
+// ══════════════════════════════════════════
+const FOTM_KEY='arcane_shelf_fotm';
+
+async function loadFotmId(){
+  try{
+    const res=await dbFetch(`${SUPABASE_URL}/rest/v1/fics?select=id&order=date_added.desc&limit=1`);
+    // use a dedicated supabase row or localStorage
+  }catch(e){}
+  return localStorage.getItem(FOTM_KEY)||null;
+}
+
+function getFotmId(){return localStorage.getItem(FOTM_KEY)||null;}
+function setFotmId(id){localStorage.setItem(FOTM_KEY,String(id));}
+
+function renderFotm(){
+  const card=document.getElementById('fotm-card');
+  if(!card)return;
+  const id=getFotmId();
+  const f=id?fics.find(f=>String(f.id)===String(id)):null;
+
+  if(!f){
+    card.innerHTML=`<div class="fotm-empty">
+      No fic of the month set yet.
+      ${isOwner?`<br><button class="fotm-change-btn" style="margin-top:.75rem" onclick="openFotmModal()">✦ Choose a Fic</button>`:''}
+    </div>`;
+    return;
+  }
+
+  const pf=primaryFandom(f);
+  const fc=getFandomColor(pf);
+  const fandomPills=(f.fandoms||[pf]).map(fd=>{const c=getFandomColor(fd);return`<span class="card-fandom-pill" style="background:${c.color}22;color:${c.light};border:1px solid ${c.color}44;font-size:.62rem;padding:.08rem .35rem">${fd}</span>`;}).join('');
+  const coverHTML=f.cover
+    ?`<img class="fotm-cover" src="${f.cover}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    :`<div class="fotm-cover-placeholder" style="background:linear-gradient(135deg,${fc.color},rgba(0,0,0,.6))">${getFandomGlyph(pf)}</div>`;
+
+  // review — show stars and spice always, notes only if 4+ stars
+  let reviewHTML='';
+  if(f.review){
+    const stars='★'.repeat(f.review.stars||0)+'☆'.repeat(5-(f.review.stars||0));
+    const chilis=(f.review.chili||0)>0?'🌶️'.repeat(f.review.chili):'';
+    reviewHTML=`<div class="fotm-review"><span class="fotm-stars">${stars}</span>${chilis?`<span class="fotm-chilis">${chilis}</span>`:''}</div>`;
+    if(f.review.text&&(f.review.stars||0)>=4){
+      reviewHTML+=`<div class="fotm-notes">${f.review.text}</div>`;
+    }
+  }
+
+  card.innerHTML=`
+    <div class="fotm-inner">
+      <div>${coverHTML}<div class="fotm-cover-placeholder" style="background:linear-gradient(135deg,${fc.color},rgba(0,0,0,.6));display:none">${getFandomGlyph(pf)}</div></div>
+      <div class="fotm-body">
+        <div class="fotm-eyebrow">Fic of the Month</div>
+        <div class="fotm-fandoms">${fandomPills}</div>
+        <div class="fotm-title">${f.title}</div>
+        <div class="fotm-author">by ${f.author}</div>
+        ${reviewHTML}
+        <div class="fotm-actions">
+          ${f.link?`<a class="btn-read" href="${f.link}" target="_blank">Read on AO3 →</a>`:''}
+          <button class="btn-review" onclick="openFicDetail(${f.id})">Full Review →</button>
+          ${isOwner?`<button class="fotm-change-btn" onclick="openFotmModal()">Change ✦</button>`:''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function openFotmModal(){
+  document.getElementById('fotm-search').value='';
+  renderFotmList();
+  document.getElementById('fotm-modal').classList.add('open');
+}
+
+function renderFotmList(){
+  const q=document.getElementById('fotm-search').value.toLowerCase().trim();
+  const list=visibleFics().filter(f=>!q||f.title.toLowerCase().includes(q)||f.author.toLowerCase().includes(q));
+  const currentId=getFotmId();
+  document.getElementById('fotm-list').innerHTML=list.slice(0,30).map(f=>`
+    <div onclick="selectFotm(${f.id})" style="padding:.6rem .75rem;border-radius:5px;cursor:pointer;border:1px solid ${String(f.id)===String(currentId)?'var(--gold)':'var(--border)'};background:${String(f.id)===String(currentId)?'rgba(201,168,76,.06)':'var(--obsidian)'};transition:all .2s;display:flex;align-items:center;justify-content:space-between;gap:.75rem">
+      <div>
+        <div style="font-size:.9rem;color:var(--parchment)">${f.title}</div>
+        <div style="font-size:.75rem;color:var(--parchment-dim);font-style:italic">by ${f.author} · ${primaryFandom(f)}</div>
+      </div>
+      ${String(f.id)===String(currentId)?'<span style="color:var(--gold);font-size:.7rem">Current</span>':''}
+    </div>`).join('');
+}
+
+function selectFotm(id){
+  setFotmId(id);
+  renderFotm();
+  closeModal('fotm-modal');
+  showToast('✦ Fic of the Month updated!');
+}
+
 // ══════════════════════════════════════════
 // SYNC UI
 // ══════════════════════════════════════════
@@ -835,10 +1072,7 @@ function setSyncError(){document.getElementById('sync-dot').className='sync-dot 
 // INIT
 // ══════════════════════════════════════════
 async function init(){
-  const savedAuth=checkSavedAuth();
-  if(!savedAuth){
-    // show password screen after loading
-  }
+  checkSavedAuth();
   try{
     fics=await loadFics();
     fics.forEach(f=>{
@@ -852,13 +1086,12 @@ async function init(){
     setSyncError();
   }
   renderAll();
+  renderWelcome();
   const ls=document.getElementById('loading-screen');
   ls.classList.add('fade-out');
   setTimeout(()=>{
     ls.style.display='none';
-    if(!savedAuth){
-      document.getElementById('password-screen').classList.add('visible');
-    }
+    document.getElementById('welcome-screen').classList.add('visible');
   },500);
 }
 
@@ -875,6 +1108,7 @@ function renderAll(){
   renderSidebar();renderCards();renderCurrentlyReading();
   renderFandomPage();renderShipsPage();renderTagsPage();
   renderFavourites();renderStats();updateHeroStats();updateDataLists();
+  renderFotm();
 }
 
 // ══════════════════════════════════════════
@@ -1060,14 +1294,16 @@ function openFicDetail(id){
     const stars='★'.repeat(f.review.stars||0)+'☆'.repeat(5-(f.review.stars||0));
     const chilis=(f.review.chili||0)>0?'🌶️'.repeat(f.review.chili):'';
     const spiceLabel=SPICE_LABELS[f.review.chili||0];
+    // Option B: show stars+spice always, hide notes for <4 stars unless owner
+    const showNotes=isOwner||(f.review.stars||0)>=4;
     reviewHTML=`
       <div class="fic-detail-divider"></div>
       <div class="fic-detail-review">
         <div class="fic-detail-review-title">My Review</div>
         <div class="fic-detail-stars">${stars}</div>
         ${chilis?`<div class="fic-detail-chilis">${chilis}<span class="fic-detail-spice-label">${spiceLabel}</span></div>`:''}
-        ${f.review.text?`<div class="fic-detail-notes">${f.review.text}</div>`:''}
-        ${f.review.rereads>0?`<div class="fic-detail-rereads">Read <span>${f.review.rereads}</span> time${f.review.rereads!==1?'s':''}</div>`:''}
+        ${showNotes&&f.review.text?`<div class="fic-detail-notes">${f.review.text}</div>`:''}
+        ${isOwner&&f.review.rereads>0?`<div class="fic-detail-rereads">Read <span>${f.review.rereads}</span> time${f.review.rereads!==1?'s':''}</div>`:''}
         ${isOwner?`<button class="btn-review" style="margin-top:.75rem" onclick="openReview(event,${f.id})">Edit Review</button>`:''}
       </div>`;
   } else {
