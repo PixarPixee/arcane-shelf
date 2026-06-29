@@ -317,7 +317,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
 .favs-empty .heart{font-size:2.8rem;display:block;margin-bottom:.9rem;opacity:.28;}
 
 /* ── WELCOME PAGE ── */
-#welcome-screen{position:fixed;inset:0;background:var(--obsidian);z-index:997;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;overflow-y:auto;background:radial-gradient(ellipse at 50% 0%,rgba(107,63,160,.2) 0%,transparent 65%),radial-gradient(ellipse at 20% 100%,rgba(139,26,58,.12) 0%,transparent 55%);transition:opacity .3s ease;}
+#welcome-screen{position:fixed;inset:0;z-index:997;display:none;flex-direction:column;align-items:center;justify-content:center;padding:2rem;overflow-y:auto;background:var(--obsidian);background-image:radial-gradient(ellipse at 50% 0%,rgba(107,63,160,.22) 0%,transparent 65%),radial-gradient(ellipse at 20% 100%,rgba(139,26,58,.14) 0%,transparent 55%);transition:opacity .3s ease;}
 #welcome-screen.visible{display:flex;}
 #welcome-screen::before{content:'✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦';position:absolute;top:1.5rem;left:0;right:0;text-align:center;font-size:.52rem;color:rgba(201,168,76,.2);letter-spacing:.55em;}
 #welcome-screen::after{content:'✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦ · ✦';position:absolute;bottom:1.5rem;left:0;right:0;text-align:center;font-size:.52rem;color:rgba(201,168,76,.2);letter-spacing:.55em;}
