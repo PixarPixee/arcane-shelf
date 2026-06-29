@@ -1522,8 +1522,8 @@ async function confirmImport(){
   const aoCol=cols.find(k=>k==='AO3')||cols.find(k=>k.toLowerCase().includes('ao3'));
   const wordCol=cols.find(k=>k==='Word Count')||cols.find(k=>k.toLowerCase()==='word count')||cols.find(k=>k.toLowerCase().includes('word count'));
   const statusCol=cols.find(k=>k==='Status')||cols.find(k=>k.toLowerCase().includes('status'));
-  const spiceCol=cols.find(k=>k.includes('🌶️')||k.toLowerCase().includes('spice'));
-  const ratingCol=cols.find(k=>k.includes('★')||k==='Star Rating');
+  const spiceCol=cols.find(k=>k==='Spice')||cols.find(k=>k.includes('🌶️'))||cols.find(k=>k.toLowerCase().includes('spice'));
+  const ratingCol=cols.find(k=>k==='Star Rating')||cols.find(k=>k.includes('★'))||cols.find(k=>k.toLowerCase().includes('rating'));
   const rereadCol=cols.find(k=>k==='Reread Count')||cols.find(k=>k.toLowerCase().includes('reread'));
   const authorCol=cols.find(k=>k==='Authors')||cols.find(k=>k.toLowerCase().includes('author'));
   const fandomCol='Fandom';
@@ -1581,9 +1581,11 @@ async function confirmImport(){
       }
     }
 
-    // UPDATE existing fics — only overwrite Notion fields, preserve website reviews
+    // UPDATE existing fics — always update Notion fields, only fill reviews if empty
     for(const{row,existing}of toUpdate){
       const p=buildPayload(row);
+
+      // always update these Notion-sourced fields
       const updatePayload={
         status:p.status,
         words:p.words||existing.words,
@@ -1592,8 +1594,30 @@ async function confirmImport(){
         tags:p.tags.length?p.tags:existing.tags,
         ship:p.ship||existing.ship,
         favourite:p.favourite||existing.favourite,
-        // review is intentionally NOT updated — preserves your personal ratings
       };
+
+      // only fill in review fields if not already set on the website
+      if(p.review){
+        const hasExistingReview=existing.review&&(
+          (existing.review.stars>0)||
+          (existing.review.chili>0)||
+          (existing.review.text&&existing.review.text.trim()!=='')||
+          (existing.review.rereads>0)
+        );
+        if(!hasExistingReview){
+          // no review on website yet — bring it over from Notion
+          updatePayload.review=p.review;
+        } else {
+          // review exists — only fill individual empty fields
+          const merged={...existing.review};
+          if(!merged.stars&&p.review.stars)merged.stars=p.review.stars;
+          if(!merged.chili&&p.review.chili)merged.chili=p.review.chili;
+          if((!merged.text||merged.text.trim()==='')&&p.review.text)merged.text=p.review.text;
+          if(!merged.rereads&&p.review.rereads)merged.rereads=p.review.rereads;
+          updatePayload.review=merged;
+        }
+      }
+
       const changed=Object.keys(updatePayload).some(k=>JSON.stringify(updatePayload[k])!==JSON.stringify(existing[k]));
       if(changed){await updateFic(existing.id,updatePayload);updated++;}
     }
