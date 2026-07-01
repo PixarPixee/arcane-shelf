@@ -449,6 +449,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   .form-row{grid-template-columns:1fr;}
   .modal{padding:1.05rem;}
   .fic-detail-top,.fic-detail-review,.fic-detail-actions{padding-left:1.1rem;padding-right:1.1rem;}
+  /* keep logout icon visible on mobile even when other btn-icons hide their text */
+  #logout-btn span{display:inline!important;}
 }
 </style>
 </head>
@@ -544,6 +546,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   <div class="mobile-nav-actions">
     <button class="btn-add owner-only" id="mobile-add-btn" style="display:none;width:100%;padding:.5rem" onclick="openAddModal();closeMobileNav()">+ Add Fic</button>
     <button class="btn-import-csv owner-only" id="mobile-import-btn" style="display:none" onclick="openImportModal();closeMobileNav()">📥 Import from Notion</button>
+    <button class="btn-cancel owner-only" id="mobile-logout-btn" style="display:none;width:100%;text-align:center;color:#D4758A;border-color:rgba(139,26,58,.3)" onclick="logout();closeMobileNav()">🔓 Log Out of Owner Mode</button>
     <button class="btn-cancel" style="width:100%;text-align:center;margin-top:.25rem" onclick="closeMobileNav()">Close</button>
   </div>
 </div>
@@ -790,7 +793,11 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Word Count</label><input class="form-input" type="number" id="f-words" placeholder="e.g. 45000"></div>
-      <div class="form-group"><label class="form-label">Chapters</label><input class="form-input" id="f-chapters" placeholder="e.g. 12 or 12/20"></div>
+      <div class="form-group"><label class="form-label">Total Chapters</label><input class="form-input" id="f-chapters" placeholder="e.g. 24"></div>
+    </div>
+    <div class="form-group" id="current-chapter-group">
+      <label class="form-label">Current Chapter <span style="font-size:.63rem;color:var(--parchment-dim);font-family:'EB Garamond',serif;text-transform:none;letter-spacing:0">— for Reading progress bar</span></label>
+      <input class="form-input" type="number" id="f-current-chapter" placeholder="e.g. 8" min="0">
     </div>
     <div class="form-group"><label class="form-label">Summary</label><textarea class="form-textarea" id="f-summary" placeholder="Paste or write a brief summary…"></textarea></div>
     <div class="form-group"><label class="form-label">Tags / Warnings (comma-separated)</label><input class="form-input" id="f-tags" placeholder="e.g. Slow Burn, Major Character Death, AU"></div>
@@ -1715,7 +1722,15 @@ function openEditModal(e,id){
   document.getElementById('f-ship').value=fic.ship||'';
   document.getElementById('f-status').value=fic.status;
   document.getElementById('f-words').value=fic.words||'';
-  document.getElementById('f-chapters').value=fic.chapters||'';
+  // split chapters into current/total if formatted as X/Y
+  const chMatch=(fic.chapters||'').toString().match(/^(\d+)\s*\/\s*(\d+)$/);
+  if(chMatch){
+    document.getElementById('f-current-chapter').value=chMatch[1];
+    document.getElementById('f-chapters').value=chMatch[2];
+  } else {
+    document.getElementById('f-current-chapter').value='';
+    document.getElementById('f-chapters').value=fic.chapters||'';
+  }
   document.getElementById('f-summary').value=fic.summary||'';
   document.getElementById('f-tags').value=(fic.tags||[]).join(', ');
   document.getElementById('f-cover').value=fic.cover||'';
@@ -1737,8 +1752,15 @@ async function saveFic(){
   const rawInput=document.getElementById('f-fandom-input').value.trim();
   if(rawInput&&!pendingFandoms.includes(rawInput))pendingFandoms.push(rawInput);
   if(!title||!author||!pendingFandoms.length){showToast('Please fill in title, author, and at least one fandom.');return;}
+  const totalChapters=document.getElementById('f-chapters').value.trim();
+  const currentChapter=document.getElementById('f-current-chapter').value.trim();
+  // build chapters string — if both present format as current/total, otherwise just total
+  let chapters='';
+  if(currentChapter&&totalChapters) chapters=`${currentChapter}/${totalChapters}`;
+  else if(totalChapters) chapters=totalChapters;
+  else if(currentChapter) chapters=currentChapter;
   const tags=(document.getElementById('f-tags').value||'').split(',').map(t=>t.trim()).filter(Boolean);
-  const payload={title,author,fandoms:pendingFandoms,ship:document.getElementById('f-ship').value.trim(),status:document.getElementById('f-status').value,words:parseInt(document.getElementById('f-words').value)||0,chapters:document.getElementById('f-chapters').value.trim(),summary:document.getElementById('f-summary').value.trim(),tags,cover:document.getElementById('f-cover').value.trim(),link:document.getElementById('f-link').value.trim()||'',favourite:false,date_added:Date.now()};
+  const payload={title,author,fandoms:pendingFandoms,ship:document.getElementById('f-ship').value.trim(),status:document.getElementById('f-status').value,words:parseInt(document.getElementById('f-words').value)||0,chapters,summary:document.getElementById('f-summary').value.trim(),tags,cover:document.getElementById('f-cover').value.trim(),link:document.getElementById('f-link').value.trim()||'',favourite:false,date_added:Date.now()};
   setSyncing();
   try{
     if(editFicId){
@@ -1757,7 +1779,7 @@ async function saveFic(){
   }catch(e){console.error(e);showToast('Error saving fic.');setSyncError();}
 }
 function clearAddForm(){
-  ['f-title','f-author','f-fandom-input','f-ship','f-words','f-chapters','f-summary','f-tags','f-cover','f-link'].forEach(id=>document.getElementById(id).value='');
+  ['f-title','f-author','f-fandom-input','f-ship','f-words','f-chapters','f-current-chapter','f-summary','f-tags','f-cover','f-link'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-status').value='Finished';
   pendingFandoms=[];renderFandomPicker();
 }
@@ -1998,6 +2020,8 @@ async function confirmImport(){
   const summaryCol=cols.find(k=>k==='Summary')||cols.find(k=>k.toLowerCase().includes('summary'));
   const notesCol=cols.find(k=>k==='My Notes')||cols.find(k=>k.toLowerCase().includes('note'));
   const chaptersCol=cols.find(k=>k==='Chapters')||cols.find(k=>k.toLowerCase().includes('chapter'));
+  const currentChapterCol=cols.find(k=>k==='Current Chapter')||cols.find(k=>k.toLowerCase().includes('current chapter'));
+  const totalChaptersCol=cols.find(k=>k==='Total Chapters')||cols.find(k=>k.toLowerCase().includes('total chapter'));
   const favCol=cols.find(k=>k==='Favorite?')||cols.find(k=>k.toLowerCase().includes('favorit')||k.toLowerCase().includes('favourit'));
   const dateFinishedCol=cols.find(k=>k==='Date Finished')||cols.find(k=>k==='End Date')||cols.find(k=>k.toLowerCase().includes('date finish')||k.toLowerCase().includes('end date'));
 
@@ -2024,6 +2048,14 @@ async function confirmImport(){
         year_finished=d.getFullYear();
       }
     }
+    // chapters — combine current/total into X/Y format for progress bar
+    const currentCh=(currentChapterCol?row[currentChapterCol]||'':'').trim().replace(/[^0-9]/g,'');
+    const totalCh=(totalChaptersCol?row[totalChaptersCol]||'':'').trim().replace(/[^0-9]/g,'');
+    const rawCh=(chaptersCol?row[chaptersCol]||'':'').trim();
+    let chapters='';
+    if(currentCh&&totalCh) chapters=`${currentCh}/${totalCh}`;
+    else if(totalCh) chapters=totalCh;
+    else if(rawCh) chapters=rawCh;
     return{
       title:row['Title']||'Untitled',
       author:row[authorCol]||'Unknown',
@@ -2031,7 +2063,7 @@ async function confirmImport(){
       ship:row[shipCol]||'',
       status:mapStatus(row[statusCol]||''),
       words:wordCount,
-      chapters:row[chaptersCol]||'',
+      chapters,
       summary:row[summaryCol]||'',
       tags:(row[tagsCol]||'').split(',').map(t=>t.trim()).filter(Boolean),
       cover:'',
