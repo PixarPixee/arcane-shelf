@@ -400,6 +400,14 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
 .wrapped-empty{text-align:center;padding:4rem 1rem;color:var(--parchment-dim);font-style:italic;}
 .wrapped-empty strong{color:var(--gold);font-style:normal;font-family:'Cinzel Decorative',serif;font-size:.7rem;display:block;margin-bottom:.5rem;}
 
+.cr-progress-wrap{padding:.5rem .75rem .6rem;}
+.cr-progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.28rem;}
+.cr-progress-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--parchment-dim);}
+.cr-progress-pct{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--gold-light);}
+.cr-progress-track{height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;position:relative;}
+.cr-progress-fill{height:100%;border-radius:99px;transition:width 1s cubic-bezier(.4,0,.2,1);position:relative;}
+.cr-progress-fill::after{content:'✦';position:absolute;right:-1px;top:50%;transform:translateY(-50%);font-size:.45rem;color:rgba(255,255,255,.8);line-height:1;}
+
 /* ── IMPORT ── */
 .btn-import-csv{background:rgba(107,63,160,.18);border:1px solid rgba(107,63,160,.32);color:var(--amethyst-light);padding:.42rem .85rem;border-radius:4px;cursor:pointer;font-family:'EB Garamond',serif;font-size:.9rem;transition:all .2s;width:100%;text-align:center;}
 .btn-import-csv:hover{background:rgba(107,63,160,.3);}
@@ -512,6 +520,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
     </nav>
     <div class="header-actions">
       <span class="owner-badge" id="owner-badge" style="display:none">Owner</span>
+      <button class="btn-icon owner-only" id="logout-btn" style="display:none" onclick="logout()" title="Log out of owner mode">🔓</button>
       <button class="btn-icon owner-only" id="import-btn" style="display:none" onclick="openImportModal()">📥 <span>Import</span></button>
       <button class="btn-add owner-only" id="add-btn" style="display:none" onclick="openAddModal()">+ Add Fic</button>
       <button class="hamburger-btn" onclick="openMobileNav()">☰</button>
@@ -624,6 +633,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
           <option value="alpha">A → Z</option>
           <option value="rating-desc">Highest Rated</option>
           <option value="words-desc">Most Words</option>
+          <option value="finished-desc">Recently Finished</option>
+          <option value="finished-asc">Oldest Finished</option>
         </select>
       </div>
       <div class="fic-grid" id="fic-grid"></div>
@@ -1004,7 +1015,19 @@ function applyOwnerMode(){
   if(editWrap)editWrap.style.display='block';
 }
 
-// ── WELCOME BIO EDIT ──
+function logout(){
+  localStorage.removeItem(OWNER_KEY);
+  isOwner=false;
+  // hide all owner elements
+  document.querySelectorAll('.owner-only').forEach(el=>el.style.display='none');
+  document.getElementById('owner-badge').style.display='none';
+  document.getElementById('dnf-filter').style.display='none';
+  document.getElementById('logout-btn').style.display='none';
+  const editWrap=document.getElementById('welcome-edit-wrap');
+  if(editWrap)editWrap.style.display='none';
+  renderAll();
+  showToast('Logged out of owner mode.');
+}
 function openBioModal(){
   document.getElementById('bio-text').value=welcomeBio;
   document.getElementById('bio-modal').classList.add('open');
@@ -1307,7 +1330,38 @@ function renderCurrentlyReading(){
     const pf=primaryFandom(f);const fc=getFandomColor(pf);
     const coverHTML=f.cover?`<img class="cr-cover" src="${f.cover}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:'' ;
     const ph=`<div class="cr-cover-placeholder" style="background:linear-gradient(135deg,${fc.color},rgba(0,0,0,.6));display:${f.cover?'none':'flex'}">${getFandomGlyph(pf)}</div>`;
-    return`<div class="cr-card" onclick="openFicDetail(${f.id})"><div>${coverHTML}${ph}</div><div class="cr-body"><div class="cr-fandom">${pf}</div><div class="cr-title">${f.title}</div><div class="cr-author">by ${f.author}</div></div></div>`;
+
+    // progress bar — uses chapters field if formatted as "current/total"
+    let progressHTML='';
+    if(f.chapters){
+      const match=f.chapters.toString().match(/^(\d+)\s*\/\s*(\d+)$/);
+      if(match){
+        const cur=parseInt(match[1]);
+        const total=parseInt(match[2]);
+        if(total>0){
+          const pct=Math.min(100,Math.round((cur/total)*100));
+          progressHTML=`<div class="cr-progress-wrap">
+            <div class="cr-progress-top">
+              <span class="cr-progress-label">Ch ${cur} of ${total}</span>
+              <span class="cr-progress-pct">${pct}%</span>
+            </div>
+            <div class="cr-progress-track">
+              <div class="cr-progress-fill" style="width:${pct}%;background:linear-gradient(90deg,${fc.color},${fc.light})"></div>
+            </div>
+          </div>`;
+        }
+      }
+    }
+
+    return`<div class="cr-card" onclick="openFicDetail(${f.id})">
+      <div>${coverHTML}${ph}</div>
+      <div class="cr-body">
+        <div class="cr-fandom">${pf}</div>
+        <div class="cr-title">${f.title}</div>
+        <div class="cr-author">by ${f.author}</div>
+      </div>
+      ${progressHTML}
+    </div>`;
   }).join('');
 }
 
@@ -1358,6 +1412,16 @@ function getFiltered(){
     if(sortMode==='alpha')return a.title.localeCompare(b.title);
     if(sortMode==='rating-desc')return(b.review?.stars||0)-(a.review?.stars||0);
     if(sortMode==='words-desc')return(b.words||0)-(a.words||0);
+    if(sortMode==='finished-desc'){
+      const da=a.date_finished?new Date(a.date_finished).getTime():0;
+      const db=b.date_finished?new Date(b.date_finished).getTime():0;
+      return db-da;
+    }
+    if(sortMode==='finished-asc'){
+      const da=a.date_finished?new Date(a.date_finished).getTime():Infinity;
+      const db=b.date_finished?new Date(b.date_finished).getTime():Infinity;
+      return da-db;
+    }
     return 0;
   });
 }
