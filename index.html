@@ -473,6 +473,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
       <div class="welcome-cr-fics" id="welcome-cr-fics"></div>
     </div>
     <button class="welcome-enter-btn" onclick="enterArchive()">✦ Enter the Archive ✦</button>
+    <div id="welcome-edit-wrap" style="display:none;margin-top:.5rem;">
+      <button onclick="openBioModal()" style="background:none;border:1px solid var(--border);color:var(--parchment-dim);padding:.3rem .7rem;border-radius:4px;cursor:pointer;font-size:.75rem;font-family:'EB Garamond',serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--parchment-dim)'">✏️ Edit Welcome Message</button>
+    </div>
   </div>
 </div>
 
@@ -589,8 +592,22 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
         <div class="filter-tags">
           <span class="filter-tag active" onclick="setFilter('myrating','all',this)">All</span>
           <span class="filter-tag" onclick="setFilter('myrating','5',this)">★★★★★</span>
-          <span class="filter-tag" onclick="setFilter('myrating','4',this)">★★★★+</span>
-          <span class="filter-tag" onclick="setFilter('myrating','3',this)">★★★+</span>
+          <span class="filter-tag" onclick="setFilter('myrating','4',this)">★★★★</span>
+          <span class="filter-tag" onclick="setFilter('myrating','3',this)">★★★</span>
+          <span class="filter-tag" onclick="setFilter('myrating','2',this)">★★</span>
+          <span class="filter-tag" onclick="setFilter('myrating','1',this)">★</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Spice Level</div>
+        <div class="filter-tags">
+          <span class="filter-tag active" onclick="setFilter('spice','all',this)">All</span>
+          <span class="filter-tag" onclick="setFilter('spice','0',this)">None</span>
+          <span class="filter-tag" onclick="setFilter('spice','1',this)">🌶️</span>
+          <span class="filter-tag" onclick="setFilter('spice','2',this)">🌶️🌶️</span>
+          <span class="filter-tag" onclick="setFilter('spice','3',this)">🌶️🌶️🌶️</span>
+          <span class="filter-tag" onclick="setFilter('spice','4',this)">🌶️🌶️🌶️🌶️</span>
+          <span class="filter-tag" onclick="setFilter('spice','5',this)">🌶️🌶️🌶️🌶️🌶️</span>
         </div>
       </div>
     </aside>
@@ -868,6 +885,22 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,13,18,.94);backdrop-
   </div>
 </div>
 
+<!-- MODAL: EDIT WELCOME BIO -->
+<div class="modal-overlay" id="bio-modal" onclick="closeModalOutside(event,'bio-modal')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title">✏️ Edit Welcome Message</div>
+    <div class="form-group">
+      <label class="form-label">Welcome Bio</label>
+      <textarea class="form-textarea" id="bio-text" style="min-height:120px;" placeholder="Write a personal intro for your archive…"></textarea>
+      <div class="form-hint">This shows on the welcome page for all visitors. Keep it personal and in your voice!</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('bio-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveBio()">Save Message</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -931,7 +964,7 @@ let fandomColorIdx=0;
 let activeFandom='all';
 let activeTagFilter=null;
 let activeShipFilter=null;
-let filters={status:'all',myrating:'all'};
+let filters={status:'all',myrating:'all',spice:'all'};
 let sortMode='newest';
 let reviewFicId=null;
 let editFicId=null;
@@ -966,6 +999,33 @@ function applyOwnerMode(){
   document.querySelectorAll('.owner-only').forEach(el=>el.style.display='');
   document.getElementById('owner-badge').style.display='';
   document.getElementById('dnf-filter').style.display='';
+  // show edit bio button on welcome screen
+  const editWrap=document.getElementById('welcome-edit-wrap');
+  if(editWrap)editWrap.style.display='block';
+}
+
+// ── WELCOME BIO EDIT ──
+function openBioModal(){
+  document.getElementById('bio-text').value=welcomeBio;
+  document.getElementById('bio-modal').classList.add('open');
+}
+
+async function saveBio(){
+  const newBio=document.getElementById('bio-text').value.trim();
+  if(!newBio){showToast('Bio cannot be empty!');return;}
+  setSyncing();
+  try{
+    await setSetting('welcome_bio',newBio);
+    welcomeBio=newBio;
+    const bioEl=document.getElementById('welcome-bio');
+    if(bioEl)bioEl.textContent=newBio;
+    setSynced();
+    closeModal('bio-modal');
+    showToast('✦ Welcome message updated!');
+  }catch(e){
+    showToast('Error saving bio.');
+    setSyncError();
+  }
 }
 
 function checkSavedAuth(){
@@ -1286,6 +1346,11 @@ function getFiltered(){
     if(activeShipFilter&&f.ship!==activeShipFilter)return false;
     if(filters.status!=='all'&&f.status!==filters.status)return false;
     if(filters.myrating!=='all'){const n=parseInt(filters.myrating);if(!f.review||(f.review.stars||0)!==n)return false;}
+    if(filters.spice!=='all'){
+      const n=parseInt(filters.spice);
+      if(n===0){if(f.review&&(f.review.chili||0)>0)return false;}
+      else{if(!f.review||(f.review.chili||0)!==n)return false;}
+    }
     return true;
   }).sort((a,b)=>{
     if(sortMode==='newest')return(b.date_added||0)-(a.date_added||0);
