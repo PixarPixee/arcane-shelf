@@ -1515,7 +1515,14 @@ function setSyncError(){document.getElementById('sync-dot').className='sync-dot 
 // ══════════════════════════════════════════
 async function init(){
   checkSavedAuth();
-  // load everything independently so one failure never blocks the rest
+
+  // FAILSAFE — force loading screen to clear after 6 seconds no matter what
+  const failsafe=setTimeout(()=>{
+    const ls=document.getElementById('loading-screen');
+    ls.style.display='none';
+    document.getElementById('welcome-screen').classList.add('visible');
+  },6000);
+
   try{fics=await loadFics();}catch(e){fics=[];setSyncError();}
   fics.forEach(f=>{
     if(!f.fandoms)f.fandoms=[];
@@ -1524,6 +1531,8 @@ async function init(){
   });
   try{await loadSettings();}catch(e){console.warn('settings load failed',e);}
   try{await loadTagCategories();}catch(e){console.warn('tag categories load failed',e);}
+
+  clearTimeout(failsafe);
   renderAll();
   renderWelcome();
   const ls=document.getElementById('loading-screen');
@@ -1924,9 +1933,12 @@ function renderGoal(){
   const yr=goalYear||new Date().getFullYear();
   const finished=fics.filter(f=>f.status==='Finished'&&f.year_finished===yr).length;
   const pct=goalTarget?Math.min(100,Math.round((finished/goalTarget)*100)):0;
-  document.getElementById('goal-year').textContent=yr;
-  document.getElementById('goal-count').textContent=goalTarget?`${finished} of ${goalTarget} · ${pct}%`:`${finished} fics`;
-  document.getElementById('goal-fill').style.width=`${pct}%`;
+  const yearEl=document.getElementById('goal-year');
+  const countEl=document.getElementById('goal-count');
+  const fillEl=document.getElementById('goal-fill');
+  if(yearEl)yearEl.textContent=yr;
+  if(countEl)countEl.textContent=goalTarget?`${finished} of ${goalTarget} · ${pct}%`:`${finished} fics`;
+  if(fillEl)fillEl.style.width=`${pct}%`;
 }
 
 function openGoalModal(){
