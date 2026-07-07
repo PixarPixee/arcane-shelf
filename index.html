@@ -2425,8 +2425,7 @@ function renderStats(){
   const favs=vf.filter(f=>f.favourite).length;
   const reviewed=vf.filter(f=>f.review).length;
   const rereads=vf.filter(f=>f.review?.rereads>0).reduce((s,f)=>s+(f.review.rereads||0),0);
-  const avgWords=total?Math.round(totalWords/total):0;
-  const avgWords=finished?Math.round(vf.filter(f=>f.status==="Finished").reduce((s,f)=>s+(f.words||0),0)/finished):0;
+  const avgWords=finished?Math.round(vf.filter(f=>f.status==='Finished').reduce((s,f)=>s+(f.words||0),0)/finished):0;
   const mostReread=vf.filter(f=>f.review?.rereads>0).sort((a,b)=>(b.review.rereads||0)-(a.review.rereads||0))[0];
   const stars={5:0,4:0,3:0,2:0,1:0};
   vf.filter(f=>f.review?.stars).forEach(f=>{stars[f.review.stars]=(stars[f.review.stars]||0)+1;});
