@@ -1200,6 +1200,15 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 <div class="toast" id="toast"></div>
 
 <script>
+// Absolute emergency failsafe — runs immediately
+setTimeout(function(){
+  var ls=document.getElementById('loading-screen');
+  var ws=document.getElementById('welcome-screen');
+  if(ls)ls.style.display='none';
+  if(ws)ws.style.display='flex';
+},4000);
+</script>
+<script>
 // ══════════════════════════════════════════
 // SUPABASE
 // ══════════════════════════════════════════
@@ -1516,31 +1525,25 @@ function setSyncError(){document.getElementById('sync-dot').className='sync-dot 
 async function init(){
   checkSavedAuth();
 
-  // FAILSAFE — force loading screen to clear after 6 seconds no matter what
-  const failsafe=setTimeout(()=>{
-    const ls=document.getElementById('loading-screen');
-    ls.style.display='none';
+  // Force loading screen to clear after 3 seconds NO MATTER WHAT
+  setTimeout(()=>{
+    document.getElementById('loading-screen').style.display='none';
     document.getElementById('welcome-screen').classList.add('visible');
-  },6000);
+  },3000);
 
-  try{fics=await loadFics();}catch(e){fics=[];setSyncError();}
+  try{fics=await loadFics();}catch(e){fics=[];}
   fics.forEach(f=>{
     if(!f.fandoms)f.fandoms=[];
     if(!f.cover)f.cover='';
     if(!f.review)f.review=null;
   });
-  try{await loadSettings();}catch(e){console.warn('settings load failed',e);}
-  try{await loadTagCategories();}catch(e){console.warn('tag categories load failed',e);}
+  try{await loadSettings();}catch(e){}
+  try{await loadTagCategories();}catch(e){}
 
-  clearTimeout(failsafe);
   renderAll();
   renderWelcome();
-  const ls=document.getElementById('loading-screen');
-  ls.classList.add('fade-out');
-  setTimeout(()=>{
-    ls.style.display='none';
-    document.getElementById('welcome-screen').classList.add('visible');
-  },500);
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('welcome-screen').classList.add('visible');
 }
 
 // ══════════════════════════════════════════
