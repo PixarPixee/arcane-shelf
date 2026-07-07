@@ -547,43 +547,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 .stat-narrative strong{color:var(--walnut);font-style:normal;}
 .stat-card.accent{border-color:rgba(196,120,122,.2);background:linear-gradient(135deg,rgba(196,120,122,.06),rgba(196,150,60,.03));}
 
-/* ── READING GOAL ── */
-.reading-goal-section{max-width:1360px;margin:1.25rem auto 0;padding:0 1.25rem;}
-.reading-goal-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:.85rem 1.1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
-.reading-goal-label{font-family:'Playfair Display',serif;font-size:.78rem;color:var(--walnut);font-style:italic;white-space:nowrap;}
-.reading-goal-label span{color:var(--rose-light);}
-.reading-goal-track{flex:1;min-width:120px;height:6px;background:rgba(196,120,122,.12);border-radius:99px;overflow:hidden;}
-.reading-goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--rose),var(--gold));transition:width .8s ease;}
-.reading-goal-count{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--gold-light);white-space:nowrap;}
-.reading-goal-edit{background:none;border:none;color:var(--parchment-dim);cursor:pointer;font-size:.72rem;padding:.1rem .3rem;transition:color .2s;font-family:'Lora',serif;}
-.reading-goal-edit:hover{color:var(--rose-light);}
-
-/* ── BACK TO TOP ── */
-.back-to-top{position:fixed;bottom:4.5rem;right:1.35rem;background:var(--rose);color:white;border:none;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:.85rem;z-index:80;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;box-shadow:0 2px 12px rgba(196,120,122,.4);display:flex;align-items:center;justify-content:center;}
-.back-to-top.visible{opacity:1;transform:translateY(0);}
-.back-to-top:hover{background:var(--rose-dark);}
-
-/* ── FANDOM LANDING ── */
-.fandom-landing{display:none;}
-.fandom-landing.active{display:block;}
-.fandom-landing-header{padding:2.5rem 1.25rem 2rem;text-align:center;position:relative;}
-.fandom-landing-glyph{font-size:3rem;opacity:.2;margin-bottom:.5rem;}
-.fandom-landing-name{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3rem);color:var(--walnut);font-style:italic;margin-bottom:.5rem;}
-.fandom-landing-stats{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--parchment-dim);margin-top:.75rem;}
-.fandom-landing-stat span{color:var(--gold-light);}
-.fandom-landing-filters{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem;padding:0 1.25rem;}
-
-/* ── CR QUICK UPDATE ── */
-.cr-update-wrap{display:flex;align-items:center;gap:.4rem;padding:.35rem .75rem .45rem .95rem;border-top:1px solid rgba(196,150,60,.1);}
-.cr-update-btn{background:rgba(196,120,122,.15);border:1px solid rgba(196,120,122,.25);color:var(--rose-light);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
-.cr-update-btn:hover{background:rgba(196,120,122,.28);}
-.cr-chapter-display{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--parchment-dim);flex:1;text-align:center;cursor:pointer;}
-.cr-chapter-display:hover{color:var(--rose-light);}
-.cr-chapter-input{font-family:'DM Mono',monospace;font-size:.7rem;background:var(--espresso-light);border:1px solid var(--rose);color:var(--walnut);padding:.12rem .3rem;border-radius:4px;width:45px;text-align:center;outline:none;display:none;}
-
-/* ── STATUS BADGE TBR FIX ── */
-.status-TBR{background:rgba(90,122,154,.15);color:#8AABCC;border-color:#5A7A9A;}
-
 /* ── SHIP FILTERS ── */
 .ship-filter-bar{display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;}
 .ship-search{flex:1;min-width:180px;background:var(--card-bg);border:1px solid var(--border);color:var(--walnut);padding:.42rem .7rem;border-radius:10px;font-family:'Lora',serif;font-size:.88rem;outline:none;transition:border-color .2s;}
@@ -714,16 +677,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
       <div class="stat"><span class="stat-num" id="h-finished">0</span><span class="stat-label">Finished</span></div>
     </div>
   </section>
-  <!-- Reading Goal -->
-  <div class="reading-goal-section" id="reading-goal-section">
-    <div class="reading-goal-card">
-      <div class="reading-goal-label">✦ <span id="goal-year">2026</span> Reading Goal</div>
-      <div class="reading-goal-track"><div class="reading-goal-fill" id="goal-fill" style="width:0%"></div></div>
-      <div class="reading-goal-count" id="goal-count">— of —</div>
-      <button class="reading-goal-edit owner-only" id="goal-edit-btn" style="display:none" onclick="openGoalModal()">✏️ Edit</button>
-    </div>
-  </div>
-
   <div class="currently-reading-section" style="margin-top:2rem;">
     <div class="section-eyebrow">Currently Reading</div>
     <div class="cr-scroll" id="cr-scroll"></div>
@@ -805,26 +758,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 
 <!-- FANDOMS -->
 <div id="page-fandoms" class="page">
-  <div id="fandom-grid-view">
-    <h1 class="page-title">Fandoms</h1>
-    <p class="page-sub">Every universe on the shelf. Click a fandom to browse its fics.</p>
-    <div class="fandom-grid" id="fandom-page-grid"></div>
-  </div>
-  <div id="fandom-landing-view" class="fandom-landing">
-    <button class="back-btn" onclick="exitFandomLanding()">← All Fandoms</button>
-    <div class="fandom-landing-header" id="fandom-landing-header"></div>
-    <div class="fandom-landing-filters">
-      <span class="filter-tag active" onclick="setFandomLandingFilter('status','all',this)" id="fl-status-all">All</span>
-      <span class="filter-tag" onclick="setFandomLandingFilter('status','Finished',this)">Finished</span>
-      <span class="filter-tag" onclick="setFandomLandingFilter('status','Reading',this)">Reading</span>
-      <span class="filter-tag" onclick="setFandomLandingFilter('status','TBR',this)">TBR</span>
-      <span class="filter-tag" style="margin-left:.5rem" onclick="setFandomLandingFilter('stars','all',this)" id="fl-stars-all">Any ★</span>
-      <span class="filter-tag" onclick="setFandomLandingFilter('stars','5',this)">★★★★★</span>
-      <span class="filter-tag" onclick="setFandomLandingFilter('stars','4',this)">★★★★</span>
-      <span class="filter-tag" onclick="setFandomLandingFilter('stars','3',this)">★★★</span>
-    </div>
-    <div class="fic-grid" id="fandom-landing-grid" style="padding:0 1.25rem;max-width:1360px;margin:0 auto;"></div>
-  </div>
+  <h1 class="page-title">Fandoms</h1>
+  <p class="page-sub">Every universe on the shelf. Click a fandom to browse its fics.</p>
+  <div class="fandom-grid" id="fandom-page-grid"></div>
 </div>
 
 <!-- SHIPS -->
@@ -1175,28 +1111,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
   </div>
 </div>
 
-<!-- Back to top -->
-<button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
-
-<!-- MODAL: READING GOAL -->
-<div class="modal-overlay" id="goal-modal" onclick="closeModalOutside(event,'goal-modal')">
-  <div class="modal" style="max-width:380px;">
-    <div class="modal-title">✦ Reading Goal</div>
-    <div class="form-group">
-      <label class="form-label">Year</label>
-      <input class="form-input" id="goal-year-input" type="number" value="2026" min="2020" max="2030">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Goal — fics to finish this year</label>
-      <input class="form-input" id="goal-target-input" type="number" placeholder="e.g. 50" min="1">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('goal-modal')">Cancel</button>
-      <button class="btn-save" onclick="saveGoal()">Save Goal</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1209,10 +1123,9 @@ const API=`${SUPABASE_URL}/rest/v1/fics`;
 const HEADERS={'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`};
 
 async function dbFetch(url,options={}){
-  const res=await fetch(url,{...options,headers:{...HEADERS,...(options.headers||{})}});
+  const res=await fetch(url,{...options,headers:{...HEADERS,...options.headers}});
   if(!res.ok){const err=await res.text();throw new Error(err);}
-  if(res.status===204||options.method==='DELETE')return null;
-  return res.json();
+  return options.method&&options.method!=='GET'?res:res.json();
 }
 async function loadFics(){return dbFetch(`${API}?order=date_added.desc&select=*`);}
 async function insertFic(fic){return dbFetch(API,{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(fic)});}
@@ -1406,16 +1319,10 @@ let fotmId=null;
 let welcomeBio='A personal archive of beloved fanfiction — a curated collection of stories that have left a mark. Browse by fandom, ship, or tag, and let the archive choose something for you.';
 
 async function loadSettings(){
-  try{
-    const [fid,bio,gyr,gtgt]=await Promise.all([
-      getSetting('fotm_id'),getSetting('welcome_bio'),
-      getSetting('goal_year'),getSetting('goal_target')
-    ]);
-    if(fid)fotmId=fid;
-    if(bio&&bio.trim())welcomeBio=bio;
-    if(gyr)goalYear=parseInt(gyr);
-    if(gtgt)goalTarget=parseInt(gtgt);
-  }catch(e){console.warn('loadSettings error',e);}
+  const [fid,bio]=await Promise.all([getSetting('fotm_id'),getSetting('welcome_bio')]);
+  if(fid)fotmId=fid;
+  if(bio&&bio.trim())welcomeBio=bio;
+  // update welcome bio text
   const bioEl=document.getElementById('welcome-bio');
   if(bioEl)bioEl.textContent=welcomeBio;
 }
@@ -1517,19 +1424,29 @@ function setSyncError(){document.getElementById('sync-dot').className='sync-dot 
 async function init(){
   checkSavedAuth();
   try{
-    fics=await loadFics();
+    [fics]=await Promise.all([loadFics(),loadSettings(),loadTagCategories()]);
     fics.forEach(f=>{
       if(!f.fandoms)f.fandoms=[];
       if(!f.cover)f.cover='';
       if(!f.review)f.review=null;
     });
   }catch(e){
-    fics=[];
-    showToast('Could not connect to the archive.');
-    setSyncError();
+    // try loading fics alone if combined load fails
+    try{
+      fics=await loadFics();
+      await loadSettings();
+      await loadTagCategories();
+      fics.forEach(f=>{
+        if(!f.fandoms)f.fandoms=[];
+        if(!f.cover)f.cover='';
+        if(!f.review)f.review=null;
+      });
+    }catch(e2){
+      fics=[];
+      showToast('Could not connect to cloud.');
+      setSyncError();
+    }
   }
-  try{await loadSettings();}catch(e){}
-  try{await loadTagCategories();}catch(e){}
   renderAll();
   renderWelcome();
   const ls=document.getElementById('loading-screen');
@@ -1553,7 +1470,7 @@ function renderAll(){
   renderSidebar();renderCards();renderCurrentlyReading();
   renderFandomPage();renderShipsPage();renderTagsPage();
   renderSeriesPage();renderFavourites();renderStats();
-  updateHeroStats();updateDataLists();renderFotm();renderGoal();
+  updateHeroStats();updateDataLists();renderFotm();
 }
 
 // ══════════════════════════════════════════
@@ -1660,12 +1577,6 @@ function renderCurrentlyReading(){
         <div class="cr-author">by ${f.author}</div>
       </div>
       ${progressHTML}
-      ${isOwner&&match?`<div class="cr-update-wrap" onclick="event.stopPropagation()">
-        <button class="cr-update-btn" onclick="crUpdateChapter(${f.id},-1)" title="Previous chapter">−</button>
-        <span class="cr-chapter-display" id="cr-disp-${f.id}" onclick="crStartEdit(${f.id})" title="Tap to set chapter">${match[1]}/${match[2]}</span>
-        <input class="cr-chapter-input" id="cr-inp-${f.id}" type="number" min="0" max="${match[2]}" onblur="crCommitEdit(${f.id},'${match[2]}')" onkeydown="if(event.key==='Enter')crCommitEdit(${f.id},'${match[2]}')">
-        <button class="cr-update-btn" onclick="crUpdateChapter(${f.id},1)" title="Next chapter">+</button>
-      </div>`:''}
     </div>`;
   }).join('');
 }
@@ -1735,14 +1646,12 @@ function getFiltered(){
 // CARD HTML
 // ══════════════════════════════════════════
 // reading time estimate — 250 words per minute
-function readingTime(words,status){
+function readingTime(words){
   if(!words)return'';
   const mins=Math.round(words/250);
-  let time='';
-  if(mins<60)time=`${mins}m`;
-  else{const h=Math.floor(mins/60);const m=mins%60;time=m?`${h}h ${m}m`:`${h}h`;}
-  const label=(status==='Finished')?'read':'to read';
-  return`${time} ${label}`;
+  if(mins<60)return`${mins}m read`;
+  const h=Math.floor(mins/60);const m=mins%60;
+  return m?`${h}h ${m}m read`:`${h}h read`;
 }
 
 // gradient cover placeholder
@@ -1769,7 +1678,7 @@ function cardHTML(f){
   const miniReview=f.review
     ?`<div class="card-review-bar"><span class="mini-stars">${'★'.repeat(f.review.stars||0)}${'☆'.repeat(5-(f.review.stars||0))}</span>${(f.review.chili||0)>0?`<span class="mini-chilis">${'🌶️'.repeat(f.review.chili)}</span>`:''}<span style="margin-left:auto;font-size:.6rem;color:var(--rose-light);font-family:'DM Mono',monospace;cursor:pointer" onclick="openFicDetail(${f.id})">View →</span></div>`
     :`<div class="card-review-bar">${isOwner?`<button class="btn-review" onclick="openReview(event,${f.id})">+ Write Review</button>`:'<span style="font-size:.72rem;color:var(--parchment-dim);font-style:italic;">No review yet</span>'}<span style="margin-left:auto;font-size:.6rem;color:var(--rose-light);font-family:'DM Mono',monospace;cursor:pointer" onclick="openFicDetail(${f.id})">View →</span></div>`;
-  const rt=readingTime(f.words,f.status);
+  const rt=readingTime(f.words);
   return`<div class="fic-card" style="--fandom-color:${fc.color}" onclick="openFicDetail(${f.id})">
     ${ownerActions}
     ${coverBanner}
@@ -1796,7 +1705,7 @@ function renderCards(){
   const list=getFiltered();
   document.getElementById('fic-grid').innerHTML=list.length?list.map(cardHTML).join(''):`<div class="empty-state">No fics found. The shelf awaits.</div>`;
   // hide hero sections when any filter is active
-  const hasFilter=activeFandom!=='all'||activeTagFilter||activeShipFilter||(document.getElementById('search-input')?.value||'').trim();
+  const hasFilter=activeFandom!=='all'||activeTagFilter||activeShipFilter||(document.getElementById('main-search')?.value||'').trim();
   const hero=document.querySelector('.hero');
   const cr=document.querySelector('.currently-reading-section');
   const fotm=document.querySelector('.fotm-section');
@@ -1853,7 +1762,7 @@ function openFicDetail(id){
       <div class="fic-detail-author">by ${f.author}</div>
       <div class="fic-detail-meta">
         ${f.words?`<div class="fic-detail-meta-item">📖 ${fmt(f.words)} words</div>`:''}
-        ${f.words?`<div class="fic-detail-meta-item" style="color:var(--rose-light);font-style:italic">~${readingTime(f.words,f.status)}</div>`:''}
+        ${f.words?`<div class="fic-detail-meta-item" style="color:var(--rose-light);font-style:italic">~${readingTime(f.words)}</div>`:''}
         ${f.chapters?`<div class="fic-detail-meta-item">☰ ${f.chapters} chapters</div>`:''}
         <div class="fic-detail-meta-item"><span class="status-badge status-${f.status}" style="position:static;font-size:.62rem">${f.status}</span></div>
       </div>
@@ -1906,182 +1815,14 @@ function renderFandomPage(){
   if(!sorted.length){document.getElementById('fandom-page-grid').innerHTML='<div class="empty-state">No fandoms yet.</div>';return;}
   document.getElementById('fandom-page-grid').innerHTML=sorted.map(([fd,ct])=>{const fc=getFandomColor(fd);const g=getFandomGlyph(fd);return`<div class="fandom-card" onclick="goToFandom('${fd.replace(/'/g,"\\'")}')" ><div class="fandom-banner" style="background:linear-gradient(${fc.gradient})"><span class="fandom-banner-glyph">${g}</span><div class="fandom-banner-title">${fd}</div></div><div class="fandom-card-body"><div class="fandom-card-name">${fd}</div><div class="fandom-card-stats"><div><span>${ct}</span> fic${ct!==1?'s':''}</div><div><span>${fmt(words[fd]||0)}</span> words</div><div><span>${finished[fd]||0}</span> finished</div></div></div></div>`;}).join('');
 }
-function goToFandom(fandom){showPage('fandoms');goToFandomLanding(fandom);}
+function goToFandom(fandom){activeFandom=fandom;activeTagFilter=null;activeShipFilter=null;document.getElementById('library-title').textContent=fandom;updateFilterBanner();renderSidebar();renderCards();showPage('home');}
 
 // ══════════════════════════════════════════
 // SHIPS
 // ══════════════════════════════════════════
 // ══════════════════════════════════════════
-// READING GOAL
+// SHIPS PAGE — TAROT CARDS
 // ══════════════════════════════════════════
-let goalYear=new Date().getFullYear();
-let goalTarget=50;
-
-async function loadGoal(){
-  try{
-    const yr=await getSetting('goal_year');
-    const tgt=await getSetting('goal_target');
-    if(yr)goalYear=parseInt(yr);
-    if(tgt)goalTarget=parseInt(tgt);
-  }catch(e){}
-}
-
-function renderGoal(){
-  const yr=goalYear||new Date().getFullYear();
-  const finished=fics.filter(f=>f.status==='Finished'&&f.year_finished===yr).length;
-  const pct=goalTarget?Math.min(100,Math.round((finished/goalTarget)*100)):0;
-  const yearEl=document.getElementById('goal-year');
-  const countEl=document.getElementById('goal-count');
-  const fillEl=document.getElementById('goal-fill');
-  if(yearEl)yearEl.textContent=yr;
-  if(countEl)countEl.textContent=goalTarget?`${finished} of ${goalTarget} · ${pct}%`:`${finished} fics`;
-  if(fillEl)fillEl.style.width=`${pct}%`;
-}
-
-function openGoalModal(){
-  document.getElementById('goal-year-input').value=goalYear;
-  document.getElementById('goal-target-input').value=goalTarget||'';
-  document.getElementById('goal-modal').classList.add('open');
-}
-
-async function saveGoal(){
-  const yr=parseInt(document.getElementById('goal-year-input').value)||new Date().getFullYear();
-  const tgt=parseInt(document.getElementById('goal-target-input').value)||0;
-  goalYear=yr;goalTarget=tgt;
-  try{
-    await Promise.all([setSetting('goal_year',yr),setSetting('goal_target',tgt)]);
-  }catch(e){}
-  renderGoal();
-  closeModal('goal-modal');
-  showToast('✦ Reading goal saved!');
-}
-
-// ══════════════════════════════════════════
-// BACK TO TOP
-// ══════════════════════════════════════════
-window.addEventListener('scroll',()=>{
-  const btn=document.getElementById('back-to-top');
-  if(btn)btn.classList.toggle('visible',window.scrollY>300);
-},{passive:true});
-
-// ══════════════════════════════════════════
-// KEYBOARD SHORTCUT
-// ══════════════════════════════════════════
-document.addEventListener('keydown',e=>{
-  if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){
-    e.preventDefault();
-    const s=document.getElementById('search-input');
-    if(s){s.focus();showPage('home');}
-  }
-  if(e.key==='Escape'){
-    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
-    document.getElementById('fic-detail-overlay').classList.remove('open');
-  }
-});
-
-// ══════════════════════════════════════════
-// CR QUICK CHAPTER UPDATE
-// ══════════════════════════════════════════
-async function crUpdateChapter(id,delta){
-  const f=fics.find(x=>x.id===id);if(!f||!f.chapters)return;
-  const match=f.chapters.toString().match(/^(\d+)\s*\/\s*(\d+)$/);
-  if(!match)return;
-  const cur=Math.max(0,Math.min(parseInt(match[2]),parseInt(match[1])+delta));
-  const newCh=`${cur}/${match[2]}`;
-  f.chapters=newCh;
-  const disp=document.getElementById(`cr-disp-${id}`);
-  if(disp)disp.textContent=newCh;
-  try{await updateFic(id,{chapters:newCh});renderCurrentlyReading();}
-  catch(e){showToast('Error updating chapter.');}
-}
-
-function crStartEdit(id){
-  const inp=document.getElementById(`cr-inp-${id}`);
-  const disp=document.getElementById(`cr-disp-${id}`);
-  if(!inp||!disp)return;
-  const cur=disp.textContent.split('/')[0];
-  inp.value=cur;
-  disp.style.display='none';
-  inp.style.display='block';
-  inp.focus();inp.select();
-}
-
-async function crCommitEdit(id,total){
-  const inp=document.getElementById(`cr-inp-${id}`);
-  const disp=document.getElementById(`cr-disp-${id}`);
-  if(!inp||!disp)return;
-  const val=Math.max(0,Math.min(parseInt(total),parseInt(inp.value)||0));
-  const newCh=`${val}/${total}`;
-  inp.style.display='none';
-  disp.style.display='block';
-  disp.textContent=newCh;
-  const f=fics.find(x=>x.id===id);
-  if(f)f.chapters=newCh;
-  try{await updateFic(id,{chapters:newCh});renderCurrentlyReading();}
-  catch(e){showToast('Error updating chapter.');}
-}
-
-// ══════════════════════════════════════════
-// FANDOM LANDING PAGE
-// ══════════════════════════════════════════
-let fandomLandingFilters={status:'all',stars:'all'};
-let activeFandomLanding='';
-
-function goToFandomLanding(fandom){
-  activeFandomLanding=fandom;
-  fandomLandingFilters={status:'all',stars:'all'};
-  // reset filter tags
-  document.querySelectorAll('.fandom-landing-filters .filter-tag').forEach(t=>t.classList.remove('active'));
-  document.getElementById('fl-status-all')?.classList.add('active');
-  document.getElementById('fl-stars-all')?.classList.add('active');
-
-  const fc=getFandomColor(fandom);
-  const glyph=getFandomGlyph(fandom);
-  const fdomFics=visibleFics().filter(f=>(f.fandoms||[]).includes(fandom));
-  const totalWords=fdomFics.reduce((s,f)=>s+(f.words||0),0);
-  const finished=fdomFics.filter(f=>f.status==='Finished').length;
-
-  document.getElementById('fandom-landing-header').innerHTML=`
-    <div class="fandom-landing-glyph">${glyph}</div>
-    <div class="fandom-landing-name" style="color:${fc.light}">${fandom}</div>
-    <div class="fandom-landing-stats">
-      <div><span>${fdomFics.length}</span> fic${fdomFics.length!==1?'s':''}</div>
-      <div><span>${fmt(totalWords)}</span> words</div>
-      <div><span>${finished}</span> finished</div>
-    </div>`;
-
-  document.getElementById('fandom-grid-view').style.display='none';
-  document.getElementById('fandom-landing-view').classList.add('active');
-  renderFandomLandingGrid();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function setFandomLandingFilter(type,val,el){
-  fandomLandingFilters[type]=val;
-  // deactivate siblings
-  const group=el.parentElement.querySelectorAll('.filter-tag');
-  // only deactivate tags in the same logical group
-  if(type==='status') document.querySelectorAll('.fandom-landing-filters .filter-tag').forEach(t=>{if(['all','Finished','Reading','TBR'].includes(t.textContent))t.classList.remove('active');});
-  else document.querySelectorAll('.fandom-landing-filters .filter-tag').forEach(t=>{if(['Any ★','★★★★★','★★★★','★★★'].includes(t.textContent))t.classList.remove('active');});
-  el.classList.add('active');
-  renderFandomLandingGrid();
-}
-
-function renderFandomLandingGrid(){
-  let list=visibleFics().filter(f=>(f.fandoms||[]).includes(activeFandomLanding));
-  if(fandomLandingFilters.status!=='all')list=list.filter(f=>f.status===fandomLandingFilters.status);
-  if(fandomLandingFilters.stars!=='all'){
-    const n=parseInt(fandomLandingFilters.stars);
-    list=list.filter(f=>f.review&&(f.review.stars||0)===n);
-  }
-  document.getElementById('fandom-landing-grid').innerHTML=list.length?list.map(cardHTML).join(''):'<div class="empty-state">No fics match these filters.</div>';
-}
-
-function exitFandomLanding(){
-  activeFandomLanding='';
-  document.getElementById('fandom-grid-view').style.display='block';
-  document.getElementById('fandom-landing-view').classList.remove('active');
-}
 const ROMAN=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI','XXII','XXIII','XXIV','XXV'];
 
 function renderShipsPage(){
@@ -2392,7 +2133,7 @@ function renderFavourites(){
     const chilis=f.review?.chili?'🌶️'.repeat(f.review.chili):'';
     // show note quote if 4+ stars (Option B rule)
     const showNote=(isOwner||(f.review?.stars||0)>=4)&&f.review?.text;
-    const rt=readingTime(f.words,f.status);
+    const rt=readingTime(f.words);
     const coverHTML=f.cover
       ?`<img class="favs-card-cover" src="${f.cover}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
       :'';
@@ -2424,8 +2165,7 @@ function renderFavourites(){
 function renderStats(){
   const vf=visibleFics();
   const total=vf.length;
-  const readFics=vf.filter(f=>f.status==="Finished"||f.status==="Reading");
-  const totalWords=readFics.reduce((s,f)=>s+(f.words||0),0);
+  const totalWords=vf.reduce((s,f)=>s+(f.words||0),0);
   const allFandoms=new Set(vf.flatMap(f=>f.fandoms||[])).size;
   const finished=vf.filter(f=>f.status==='Finished').length;
   const reading=vf.filter(f=>f.status==='Reading').length;
@@ -2434,7 +2174,8 @@ function renderStats(){
   const favs=vf.filter(f=>f.favourite).length;
   const reviewed=vf.filter(f=>f.review).length;
   const rereads=vf.filter(f=>f.review?.rereads>0).reduce((s,f)=>s+(f.review.rereads||0),0);
-  const avgWords=finished?Math.round(vf.filter(f=>f.status==='Finished').reduce((s,f)=>s+(f.words||0),0)/finished):0;
+  const avgWords=total?Math.round(totalWords/total):0;
+  const longestFic=vf.filter(f=>f.words).sort((a,b)=>(b.words||0)-(a.words||0))[0];
   const mostReread=vf.filter(f=>f.review?.rereads>0).sort((a,b)=>(b.review.rereads||0)-(a.review.rereads||0))[0];
   const stars={5:0,4:0,3:0,2:0,1:0};
   vf.filter(f=>f.review?.stars).forEach(f=>{stars[f.review.stars]=(stars[f.review.stars]||0)+1;});
@@ -2450,7 +2191,7 @@ function renderStats(){
   vf.forEach(f=>{if(f.author)authorCounts[f.author]=(authorCounts[f.author]||0)+1;});
   const topAuthors=Object.entries(authorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
   // narrative sentence
-  const narrative=`This archive holds <strong>${total}</strong> fic${total!==1?'s':''} spanning <strong>${allFandoms}</strong> fandom${allFandoms!==1?'s':''}. Across <strong>${finished}</strong> finished fic${finished!==1?'s':''}, <strong>${fmt(totalWords)}</strong> words have been read — roughly <strong>${Math.round(totalWords/90000)||1}</strong> novel${Math.round(totalWords/90000)!==1?'s':''} worth. ${favs} fic${favs!==1?'s are':' is'} marked as favourite${favs!==1?'s':''}, and ${reviewed} ${reviewed!==1?'have':'has'} been reviewed.`;
+  const narrative=`This archive holds <strong>${total}</strong> fic${total!==1?'s':''} spanning <strong>${allFandoms}</strong> fandom${allFandoms!==1?'s':''}, with <strong>${fmt(totalWords)}</strong> total words read — that's roughly <strong>${Math.round(totalWords/90000)}</strong> novel${Math.round(totalWords/90000)!==1?'s':''} worth of reading. ${favs} fic${favs!==1?'s are':' is'} marked as favourite${favs!==1?'s':''}, and ${reviewed} ${reviewed!==1?'have':'has'} been reviewed.`;
 
   document.getElementById('stats-page').innerHTML=`
     <div class="stat-narrative">${narrative}</div>
