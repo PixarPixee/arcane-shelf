@@ -131,6 +131,12 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 .cr-progress-track{height:5px;background:rgba(196,120,122,.12);border-radius:99px;overflow:hidden;position:relative;}
 .cr-progress-fill{height:100%;border-radius:99px;transition:width 1s cubic-bezier(.4,0,.2,1);position:relative;}
 .cr-progress-fill::after{content:'✿';position:absolute;right:-1px;top:50%;transform:translateY(-50%);font-size:.45rem;color:rgba(255,255,255,.9);line-height:1;}
+.cr-update-wrap{display:flex;align-items:center;gap:.4rem;padding:.35rem .75rem .45rem .95rem;border-top:1px solid rgba(196,150,60,.1);}
+.cr-update-btn{background:rgba(196,120,122,.15);border:1px solid rgba(196,120,122,.25);color:var(--rose-light);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.cr-update-btn:hover{background:rgba(196,120,122,.28);}
+.cr-chapter-display{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--parchment-dim);flex:1;text-align:center;cursor:pointer;}
+.cr-chapter-display:hover{color:var(--rose-light);}
+.cr-chapter-input{font-family:'DM Mono',monospace;font-size:.7rem;background:var(--espresso-light);border:1px solid var(--rose);color:var(--walnut);padding:.12rem .3rem;border-radius:4px;width:45px;text-align:center;outline:none;display:none;}
 
 /* ── MAIN LAYOUT ── */
 .main-layout{display:grid;grid-template-columns:215px 1fr;gap:2rem;align-items:start;margin-top:2rem;}
@@ -1613,8 +1619,9 @@ function renderCurrentlyReading(){
 
     // progress bar — uses chapters field if formatted as "current/total"
     let progressHTML='';
+    let match=null;
     if(f.chapters){
-      const match=f.chapters.toString().match(/^(\d+)\s*\/\s*(\d+)$/);
+      match=f.chapters.toString().match(/^(\d+)\s*\/\s*(\d+)$/);
       if(match){
         const cur=parseInt(match[1]);
         const total=parseInt(match[2]);
@@ -1641,6 +1648,12 @@ function renderCurrentlyReading(){
         <div class="cr-author">by ${f.author}</div>
       </div>
       ${progressHTML}
+      ${isOwner&&match?`<div class="cr-update-wrap" onclick="event.stopPropagation()">
+        <button class="cr-update-btn" onclick="crUpdateChapter(${f.id},-1)">−</button>
+        <span class="cr-chapter-display" id="cr-disp-${f.id}" onclick="crStartEdit(${f.id})" title="Tap to set chapter">${match[1]}/${match[2]}</span>
+        <input class="cr-chapter-input" id="cr-inp-${f.id}" type="number" min="0" max="${match[2]}" onblur="crCommitEdit(${f.id},'${match[2]}')" onkeydown="if(event.key==='Enter')crCommitEdit(${f.id},'${match[2]}')">
+        <button class="cr-update-btn" onclick="crUpdateChapter(${f.id},1)">+</button>
+      </div>`:''}
     </div>`;
   }).join('');
 }
@@ -3229,6 +3242,45 @@ function spinPicker(){
 }
 
 // update picker fandom list when page is shown — handled inside showPage directly
+// ══════════════════════════════════════════
+// CR QUICK CHAPTER UPDATE
+// ══════════════════════════════════════════
+async function crUpdateChapter(id,delta){
+  const f=fics.find(x=>x.id===id);if(!f||!f.chapters)return;
+  const m=f.chapters.toString().match(/^(\d+)\s*\/\s*(\d+)$/);
+  if(!m)return;
+  const cur=Math.max(0,Math.min(parseInt(m[2]),parseInt(m[1])+delta));
+  const newCh=`${cur}/${m[2]}`;
+  f.chapters=newCh;
+  try{await updateFic(id,{chapters:newCh});renderCurrentlyReading();}
+  catch(e){showToast('Error updating chapter.');}
+}
+
+function crStartEdit(id){
+  const inp=document.getElementById(`cr-inp-${id}`);
+  const disp=document.getElementById(`cr-disp-${id}`);
+  if(!inp||!disp)return;
+  inp.value=disp.textContent.split('/')[0];
+  disp.style.display='none';
+  inp.style.display='block';
+  inp.focus();inp.select();
+}
+
+async function crCommitEdit(id,total){
+  const inp=document.getElementById(`cr-inp-${id}`);
+  const disp=document.getElementById(`cr-disp-${id}`);
+  if(!inp||!disp)return;
+  const val=Math.max(0,Math.min(parseInt(total),parseInt(inp.value)||0));
+  const newCh=`${val}/${total}`;
+  inp.style.display='none';
+  disp.style.display='block';
+  disp.textContent=newCh;
+  const f=fics.find(x=>x.id===id);
+  if(f)f.chapters=newCh;
+  try{await updateFic(id,{chapters:newCh});renderCurrentlyReading();}
+  catch(e){showToast('Error updating chapter.');}
+}
+
 // ══════════════════════════════════════════
 // READING GOAL
 // ══════════════════════════════════════════
