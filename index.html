@@ -1405,14 +1405,16 @@ let fotmId=null;
 let welcomeBio='A personal archive of beloved fanfiction — a curated collection of stories that have left a mark. Browse by fandom, ship, or tag, and let the archive choose something for you.';
 
 async function loadSettings(){
-  const [fid,bio,gyr,gtgt]=await Promise.all([
-    getSetting('fotm_id'),getSetting('welcome_bio'),
-    getSetting('goal_year'),getSetting('goal_target')
-  ]);
-  if(fid)fotmId=fid;
-  if(bio&&bio.trim())welcomeBio=bio;
-  if(gyr)goalYear=parseInt(gyr);
-  if(gtgt)goalTarget=parseInt(gtgt);
+  try{
+    const [fid,bio,gyr,gtgt]=await Promise.all([
+      getSetting('fotm_id'),getSetting('welcome_bio'),
+      getSetting('goal_year'),getSetting('goal_target')
+    ]);
+    if(fid)fotmId=fid;
+    if(bio&&bio.trim())welcomeBio=bio;
+    if(gyr)goalYear=parseInt(gyr);
+    if(gtgt)goalTarget=parseInt(gtgt);
+  }catch(e){console.warn('loadSettings error',e);}
   const bioEl=document.getElementById('welcome-bio');
   if(bioEl)bioEl.textContent=welcomeBio;
 }
@@ -1513,30 +1515,15 @@ function setSyncError(){document.getElementById('sync-dot').className='sync-dot 
 // ══════════════════════════════════════════
 async function init(){
   checkSavedAuth();
-  try{
-    [fics]=await Promise.all([loadFics(),loadSettings(),loadTagCategories()]);
-    fics.forEach(f=>{
-      if(!f.fandoms)f.fandoms=[];
-      if(!f.cover)f.cover='';
-      if(!f.review)f.review=null;
-    });
-  }catch(e){
-    // try loading fics alone if combined load fails
-    try{
-      fics=await loadFics();
-      await loadSettings();
-      await loadTagCategories();
-      fics.forEach(f=>{
-        if(!f.fandoms)f.fandoms=[];
-        if(!f.cover)f.cover='';
-        if(!f.review)f.review=null;
-      });
-    }catch(e2){
-      fics=[];
-      showToast('Could not connect to cloud.');
-      setSyncError();
-    }
-  }
+  // load everything independently so one failure never blocks the rest
+  try{fics=await loadFics();}catch(e){fics=[];setSyncError();}
+  fics.forEach(f=>{
+    if(!f.fandoms)f.fandoms=[];
+    if(!f.cover)f.cover='';
+    if(!f.review)f.review=null;
+  });
+  try{await loadSettings();}catch(e){console.warn('settings load failed',e);}
+  try{await loadTagCategories();}catch(e){console.warn('tag categories load failed',e);}
   renderAll();
   renderWelcome();
   const ls=document.getElementById('loading-screen');
@@ -1560,7 +1547,7 @@ function renderAll(){
   renderSidebar();renderCards();renderCurrentlyReading();
   renderFandomPage();renderShipsPage();renderTagsPage();
   renderSeriesPage();renderFavourites();renderStats();
-  updateHeroStats();updateDataLists();renderFotm();
+  updateHeroStats();updateDataLists();renderFotm();renderGoal();
 }
 
 // ══════════════════════════════════════════
