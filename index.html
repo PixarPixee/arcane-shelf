@@ -1796,7 +1796,7 @@ function renderCards(){
   const list=getFiltered();
   document.getElementById('fic-grid').innerHTML=list.length?list.map(cardHTML).join(''):`<div class="empty-state">No fics found. The shelf awaits.</div>`;
   // hide hero sections when any filter is active
-  const hasFilter=activeFandom!=='all'||activeTagFilter||activeShipFilter||(document.getElementById('main-search')?.value||'').trim();
+  const hasFilter=activeFandom!=='all'||activeTagFilter||activeShipFilter||(document.getElementById('search-input')?.value||'').trim();
   const hero=document.querySelector('.hero');
   const cr=document.querySelector('.currently-reading-section');
   const fotm=document.querySelector('.fotm-section');
