@@ -191,7 +191,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 .status-badge{margin-left:auto;font-size:.58rem;padding:.1rem .5rem;border-radius:3px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid;transform:rotate(-1deg);display:inline-block;}
 .status-Finished{background:rgba(122,158,126,.15);color:var(--sage-light);border-color:var(--sage);}
 .status-Reading{background:rgba(196,150,60,.12);color:var(--gold-light);border-color:var(--gold);}
-.status-TBR{background:rgba(122,158,126,.08);color:var(--sage-light);border-color:var(--sage-light);opacity:.8;}
+.status-TBR{background:rgba(90,122,154,.15);color:#8AABCC;border-color:#5A7A9A;}
 .status-DNF{background:rgba(196,120,122,.12);color:var(--rose-light);border-color:var(--rose);}
 .card-actions{position:absolute;top:8px;right:8px;display:flex;gap:.28rem;z-index:2;}
 .card-btn{background:rgba(28,20,16,.8);border:1px solid rgba(196,150,60,.2);color:var(--parchment-dim);width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:.72rem;display:flex;align-items:center;justify-content:center;transition:all .2s;backdrop-filter:blur(4px);}
@@ -498,6 +498,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 /* ── TOAST ── */
 .toast{position:fixed;bottom:1.35rem;right:1.35rem;background:var(--espresso-light);border:1px solid rgba(196,120,122,.3);color:var(--walnut);padding:.62rem 1.05rem;border-radius:10px;font-size:.84rem;z-index:300;transform:translateY(65px);opacity:0;transition:all .3s ease;box-shadow:var(--card-shadow-hover);max-width:320px;font-family:'Lora',serif;}
 .toast.show{transform:translateY(0);opacity:1;}
+
+.back-to-top{position:fixed;bottom:4.5rem;right:1.35rem;background:var(--rose);color:white;border:none;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:.85rem;z-index:80;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;box-shadow:0 2px 12px rgba(196,120,122,.4);display:flex;align-items:center;justify-content:center;}
+.back-to-top.visible{opacity:1;transform:translateY(0);}
+.back-to-top:hover{background:var(--rose-dark);}
 
 /* ── RESPONSIVE ── */
 @media(max-width:920px){
@@ -1111,6 +1115,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
   </div>
 </div>
 
+<button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1665,6 +1671,22 @@ function coverPlaceholder(f,width,height){
   </div>`;
 }
 
+// reading time — 250 wpm, label changes based on status
+function readingTime(words,status){
+  if(!words)return'';
+  const mins=Math.round(words/250);
+  let t='';
+  if(mins<60)t=`${mins}m`;
+  else{const h=Math.floor(mins/60);const m=mins%60;t=m?`${h}h ${m}m`:`${h}h`;}
+  return`${t} ${status==='Finished'?'read':'to read'}`;
+}
+
+// gradient cover placeholder
+function coverPlaceholder(f){
+  const pf=primaryFandom(f);const fc=getFandomColor(pf);const glyph=getFandomGlyph(pf);
+  return`<div style="width:100%;height:120px;background:linear-gradient(135deg,${fc.color}CC,${fc.color}44);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 1px,transparent 1px,transparent 8px);"></div><div style="font-size:1.8rem;opacity:.35;position:relative;z-index:1">${glyph}</div><div style="font-family:'Playfair Display',serif;font-size:.6rem;color:rgba(255,255,255,.55);text-align:center;padding:0 .5rem;margin-top:.3rem;font-style:italic;position:relative;z-index:1;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${f.title}</div></div>`;
+}
+
 function cardHTML(f){
   const pf=primaryFandom(f);const fc=getFandomColor(pf);
   const fandomPills=(f.fandoms||[pf]).map(fd=>{const c=getFandomColor(fd);return`<span class="card-fandom-pill" style="background:${c.color}22;color:${c.light};border:1px solid ${c.color}44">${fd}</span>`;}).join('');
@@ -1678,7 +1700,7 @@ function cardHTML(f){
   const miniReview=f.review
     ?`<div class="card-review-bar"><span class="mini-stars">${'★'.repeat(f.review.stars||0)}${'☆'.repeat(5-(f.review.stars||0))}</span>${(f.review.chili||0)>0?`<span class="mini-chilis">${'🌶️'.repeat(f.review.chili)}</span>`:''}<span style="margin-left:auto;font-size:.6rem;color:var(--rose-light);font-family:'DM Mono',monospace;cursor:pointer" onclick="openFicDetail(${f.id})">View →</span></div>`
     :`<div class="card-review-bar">${isOwner?`<button class="btn-review" onclick="openReview(event,${f.id})">+ Write Review</button>`:'<span style="font-size:.72rem;color:var(--parchment-dim);font-style:italic;">No review yet</span>'}<span style="margin-left:auto;font-size:.6rem;color:var(--rose-light);font-family:'DM Mono',monospace;cursor:pointer" onclick="openFicDetail(${f.id})">View →</span></div>`;
-  const rt=readingTime(f.words);
+  const rt=readingTime(f.words,f.status);
   return`<div class="fic-card" style="--fandom-color:${fc.color}" onclick="openFicDetail(${f.id})">
     ${ownerActions}
     ${coverBanner}
@@ -2133,7 +2155,7 @@ function renderFavourites(){
     const chilis=f.review?.chili?'🌶️'.repeat(f.review.chili):'';
     // show note quote if 4+ stars (Option B rule)
     const showNote=(isOwner||(f.review?.stars||0)>=4)&&f.review?.text;
-    const rt=readingTime(f.words);
+    const rt=readingTime(f.words,f.status);
     const coverHTML=f.cover
       ?`<img class="favs-card-cover" src="${f.cover}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
       :'';
@@ -3148,6 +3170,26 @@ function spinPicker(){
 }
 
 // update picker fandom list when page is shown — handled inside showPage directly
+// back to top
+window.addEventListener('scroll',()=>{
+  const btn=document.getElementById('back-to-top');
+  if(btn)btn.classList.toggle('visible',window.scrollY>300);
+},{passive:true});
+
+// keyboard shortcut — press / to focus search
+document.addEventListener('keydown',e=>{
+  if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){
+    e.preventDefault();
+    const s=document.getElementById('search-input');
+    if(s){showPage('home');s.focus();}
+  }
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+    const overlay=document.getElementById('fic-detail-overlay');
+    if(overlay)overlay.classList.remove('open');
+  }
+});
+
 init();
 </script>
 </body>
