@@ -499,6 +499,31 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 .toast{position:fixed;bottom:1.35rem;right:1.35rem;background:var(--espresso-light);border:1px solid rgba(196,120,122,.3);color:var(--walnut);padding:.62rem 1.05rem;border-radius:10px;font-size:.84rem;z-index:300;transform:translateY(65px);opacity:0;transition:all .3s ease;box-shadow:var(--card-shadow-hover);max-width:320px;font-family:'Lora',serif;}
 .toast.show{transform:translateY(0);opacity:1;}
 
+/* ── FAVOURITES REDESIGN ── */
+.favs-header{text-align:center;padding:2rem 1rem 2.5rem;}
+.favs-header-glyph{font-size:2.5rem;color:var(--rose);opacity:.35;margin-bottom:.5rem;}
+.favs-title{font-family:'Dancing Script',cursive;font-size:clamp(1.6rem,5vw,2.8rem);color:var(--walnut);margin-bottom:.5rem;}
+.favs-subtitle{font-family:'Lora',serif;font-size:.95rem;color:var(--parchment-dim);font-style:italic;}
+.favs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.4rem;}
+.favs-card{background:var(--card-bg);border:1px solid rgba(196,150,60,.15);border-left:5px solid var(--fandom-color,var(--rose));border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative;display:flex;box-shadow:var(--card-shadow);}
+.favs-card:hover{transform:translateY(-3px);box-shadow:var(--card-shadow-hover);}
+.favs-card-heart{position:absolute;top:10px;right:10px;font-size:1rem;color:var(--rose);opacity:.4;z-index:2;}
+.favs-card-cover-wrap{flex-shrink:0;width:110px;}
+.favs-card-cover{width:110px;height:100%;object-fit:cover;display:block;min-height:160px;}
+.favs-card-cover-placeholder{width:110px;min-height:160px;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.25;}
+.favs-card-body{flex:1;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.35rem;}
+.favs-card-fandoms{display:flex;gap:.28rem;flex-wrap:wrap;}
+.favs-card-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--walnut);line-height:1.25;font-style:italic;}
+.favs-card-author{font-size:.78rem;color:var(--parchment-dim);font-style:italic;font-family:'Lora',serif;}
+.favs-card-stars{font-size:1rem;color:var(--gold-light);letter-spacing:.04em;}
+.favs-card-quote{font-size:.8rem;color:var(--walnut-mid);font-style:italic;border-left:2px solid var(--rose);padding-left:.6rem;line-height:1.55;font-family:'Lora',serif;}
+.favs-card-meta{display:flex;gap:.65rem;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--parchment-dim);margin-top:auto;padding-top:.35rem;}
+.favs-empty{text-align:center;padding:4.5rem 1rem;color:var(--parchment-dim);font-style:italic;font-family:'Lora',serif;grid-column:1/-1;}
+.favs-empty .heart{font-size:2.8rem;display:block;margin-bottom:.9rem;opacity:.3;}
+.stat-narrative{background:var(--card-bg);border:1px solid var(--border);border-left:4px solid var(--rose);border-radius:10px;padding:1.1rem 1.3rem;margin-bottom:1.5rem;font-family:'Lora',serif;font-size:.95rem;color:var(--walnut-mid);line-height:1.7;font-style:italic;}
+.stat-narrative strong{color:var(--walnut);font-style:normal;}
+.stat-card.accent{border-color:rgba(196,120,122,.2);background:linear-gradient(135deg,rgba(196,120,122,.06),rgba(196,150,60,.03));}
+
 .back-to-top{position:fixed;bottom:4.5rem;right:1.35rem;background:var(--rose);color:white;border:none;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:.85rem;z-index:80;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;box-shadow:0 2px 12px rgba(196,120,122,.4);display:flex;align-items:center;justify-content:center;}
 .back-to-top.visible{opacity:1;transform:translateY(0);}
 .back-to-top:hover{background:var(--rose-dark);}
@@ -2187,7 +2212,8 @@ function renderFavourites(){
 function renderStats(){
   const vf=visibleFics();
   const total=vf.length;
-  const totalWords=vf.reduce((s,f)=>s+(f.words||0),0);
+  const readFics=vf.filter(f=>f.status==='Finished'||f.status==='Reading');
+  const totalWords=readFics.reduce((s,f)=>s+(f.words||0),0);
   const allFandoms=new Set(vf.flatMap(f=>f.fandoms||[])).size;
   const finished=vf.filter(f=>f.status==='Finished').length;
   const reading=vf.filter(f=>f.status==='Reading').length;
@@ -2196,7 +2222,7 @@ function renderStats(){
   const favs=vf.filter(f=>f.favourite).length;
   const reviewed=vf.filter(f=>f.review).length;
   const rereads=vf.filter(f=>f.review?.rereads>0).reduce((s,f)=>s+(f.review.rereads||0),0);
-  const avgWords=total?Math.round(totalWords/total):0;
+  const avgWords=finished?Math.round(vf.filter(f=>f.status==='Finished').reduce((s,f)=>s+(f.words||0),0)/finished):0;
   const longestFic=vf.filter(f=>f.words).sort((a,b)=>(b.words||0)-(a.words||0))[0];
   const mostReread=vf.filter(f=>f.review?.rereads>0).sort((a,b)=>(b.review.rereads||0)-(a.review.rereads||0))[0];
   const stars={5:0,4:0,3:0,2:0,1:0};
@@ -2213,7 +2239,7 @@ function renderStats(){
   vf.forEach(f=>{if(f.author)authorCounts[f.author]=(authorCounts[f.author]||0)+1;});
   const topAuthors=Object.entries(authorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
   // narrative sentence
-  const narrative=`This archive holds <strong>${total}</strong> fic${total!==1?'s':''} spanning <strong>${allFandoms}</strong> fandom${allFandoms!==1?'s':''}, with <strong>${fmt(totalWords)}</strong> total words read — that's roughly <strong>${Math.round(totalWords/90000)}</strong> novel${Math.round(totalWords/90000)!==1?'s':''} worth of reading. ${favs} fic${favs!==1?'s are':' is'} marked as favourite${favs!==1?'s':''}, and ${reviewed} ${reviewed!==1?'have':'has'} been reviewed.`;
+  const narrative=`This archive holds <strong>${total}</strong> fic${total!==1?'s':''} spanning <strong>${allFandoms}</strong> fandom${allFandoms!==1?'s':''}. Across <strong>${finished}</strong> finished fic${finished!==1?'s':''}, <strong>${fmt(totalWords)}</strong> words have been read — roughly <strong>${Math.max(1,Math.round(totalWords/90000))}</strong> novel${Math.round(totalWords/90000)!==1?'s':''} worth. ${favs} fic${favs!==1?'s are':' is'} marked as favourite${favs!==1?'s':''}, and ${reviewed} ${reviewed!==1?'have':'has'} been reviewed.`;
 
   document.getElementById('stats-page').innerHTML=`
     <div class="stat-narrative">${narrative}</div>
