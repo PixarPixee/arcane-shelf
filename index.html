@@ -199,6 +199,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 .status-Reading{background:rgba(196,150,60,.12);color:var(--gold-light);border-color:var(--gold);}
 .status-TBR{background:rgba(90,122,154,.15);color:#8AABCC;border-color:#5A7A9A;}
 .status-DNF{background:rgba(196,120,122,.12);color:var(--rose-light);border-color:var(--rose);}
+.status-Caught-Up{background:rgba(148,100,180,.15);color:#C4A0E0;border-color:#9464B4;}
 .card-actions{position:absolute;top:8px;right:8px;display:flex;gap:.28rem;z-index:2;}
 .card-btn{background:rgba(28,20,16,.8);border:1px solid rgba(196,150,60,.2);color:var(--parchment-dim);width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:.72rem;display:flex;align-items:center;justify-content:center;transition:all .2s;backdrop-filter:blur(4px);}
 .card-btn:hover{border-color:var(--rose);color:var(--rose-light);}
@@ -746,6 +747,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
           <span class="filter-tag active" onclick="setFilter('status','all',this)">All</span>
           <span class="filter-tag" onclick="setFilter('status','Finished',this)">Finished</span>
           <span class="filter-tag" onclick="setFilter('status','Reading',this)">Reading</span>
+          <span class="filter-tag" onclick="setFilter('status','Caught Up',this)">Caught Up</span>
           <span class="filter-tag" onclick="setFilter('status','TBR',this)">TBR</span>
           <span class="filter-tag owner-only" id="dnf-filter" style="display:none" onclick="setFilter('status','DNF',this)">DNF</span>
         </div>
@@ -810,6 +812,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
       <span class="filter-tag active" onclick="setFandomLandingFilter('status','all',this)">All</span>
       <span class="filter-tag" onclick="setFandomLandingFilter('status','Finished',this)">Finished</span>
       <span class="filter-tag" onclick="setFandomLandingFilter('status','Reading',this)">Reading</span>
+      <span class="filter-tag" onclick="setFandomLandingFilter('status','Caught Up',this)">Caught Up</span>
       <span class="filter-tag" onclick="setFandomLandingFilter('status','TBR',this)">TBR</span>
       <span class="filter-tag" style="margin-left:.5rem" onclick="setFandomLandingFilter('stars','all',this)">Any ★</span>
       <span class="filter-tag" onclick="setFandomLandingFilter('stars','5',this)">★★★★★</span>
@@ -913,6 +916,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
       <div class="filter-tags">
         <span class="filter-tag active" onclick="setPickerFilter('status','any',this)">Any</span>
         <span class="filter-tag" onclick="setPickerFilter('status','Finished',this)">Finished</span>
+        <span class="filter-tag" onclick="setPickerFilter('status','Caught Up',this)">Caught Up</span>
         <span class="filter-tag" onclick="setPickerFilter('status','TBR',this)">TBR</span>
         <span class="filter-tag" onclick="setPickerFilter('status','Reading',this)">Reading</span>
       </div>
@@ -987,6 +991,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
       <select class="form-select" id="f-status">
         <option value="Finished">Finished</option>
         <option value="Reading">Reading</option>
+        <option value="Caught Up">Caught Up — WIP, fully up to date</option>
         <option value="TBR">TBR — To Be Read</option>
         <option value="DNF">DNF — Did Not Finish</option>
       </select>
@@ -1610,8 +1615,7 @@ function animNum(id,target){
 // CURRENTLY READING
 // ══════════════════════════════════════════
 function renderCurrentlyReading(){
-  const reading=visibleFics().filter(f=>f.status==='Reading');
-  const el=document.getElementById('cr-scroll');
+  const reading=visibleFics().filter(f=>f.status==='Reading');  const el=document.getElementById('cr-scroll');
   if(!reading.length){el.innerHTML='<div class="cr-empty">Nothing currently reading. Mark a fic as Reading to see it here.</div>';return;}
   el.innerHTML=reading.map(f=>{
     const pf=primaryFandom(f);const fc=getFandomColor(pf);
@@ -1763,7 +1767,7 @@ function cardHTML(f){
   const pf=primaryFandom(f);const fc=getFandomColor(pf);
   const fandomPills=(f.fandoms||[pf]).map(fd=>{const c=getFandomColor(fd);return`<span class="card-fandom-pill" style="background:${c.color}22;color:${c.light};border:1px solid ${c.color}44">${fd}</span>`;}).join('');
   const tagHtml=(f.tags||[]).map(t=>{const cls=(t.includes('Death')||t.includes('Dark')||t.includes('Violence'))?'tag-warning':t.includes('AU')?'tag-au':'tag-general';return`<span class="tag ${cls}" onclick="filterByTag(event,'${t.replace(/'/g,"\\'")}')">${t}</span>`;}).join('');
-  const stCls=`status-${f.status}`;
+  const stCls=`status-${f.status.replace(/ /g,'-')}`;
   const coverBanner=f.cover?`<div><img class="card-cover" src="${f.cover}" alt="" onerror="this.parentElement.innerHTML=coverPlaceholder(fics.find(x=>x.id===${f.id}))"></div>`:coverPlaceholder(f);
   const ownerActions=isOwner?`<div class="card-actions">
     <button class="card-btn ${f.favourite?'fav-active':''}" onclick="toggleFav(event,${f.id})" title="Favourite">♥</button>
@@ -1858,7 +1862,7 @@ function openFicDetail(id){
         ${f.words?`<div class="fic-detail-meta-item">📖 ${fmt(f.words)} words</div>`:''}
         ${f.words?`<div class="fic-detail-meta-item" style="color:var(--rose-light);font-style:italic">~${readingTime(f.words)}</div>`:''}
         ${f.chapters?`<div class="fic-detail-meta-item">☰ ${f.chapters} chapters</div>`:''}
-        <div class="fic-detail-meta-item"><span class="status-badge status-${f.status}" style="position:static;font-size:.62rem">${f.status}</span></div>
+        <div class="fic-detail-meta-item"><span class="status-badge status-${f.status.replace(/ /g,'-')}" style="position:static;font-size:.62rem">${f.status}</span></div>
       </div>
       ${f.summary?`<div class="fic-detail-summary">${f.summary}</div>`:''}
       ${ships?`<div class="fic-detail-ships">${ships}</div>`:''}
@@ -2570,11 +2574,12 @@ function mapStatus(str){
   const s=str.toLowerCase().trim();
   if(s==='finished'||s==='finish'||s==='complete'||s==='completed'||s==='done'||s==='read')return 'Finished';
   if(s==='dnf'||s==='did not finish'||s==='abandoned'||s==='dropped')return 'DNF';
+  if(s==='caught up'||s==='caught-up'||s==='up to date'||s==='up-to-date'||s==='wip')return 'Caught Up';
   if(s==='reading'||s==='currently reading'||s==='in progress'||s==='current')return 'Reading';
   if(s==='tbr'||s==='to be read'||s==='want to read'||s==='unread'||s==='queued')return 'TBR';
-  // partial matches as fallback
   if(s.includes('finish')||s.includes('complet')||s.includes('done'))return 'Finished';
   if(s.includes('dnf'))return 'DNF';
+  if(s.includes('caught up')||s.includes('up to date'))return 'Caught Up';
   if(s.includes('reading')||s.includes('current'))return 'Reading';
   return 'TBR';
 }
@@ -2911,7 +2916,7 @@ function renderSeriesPage(){
       <div class="series-book-item">
         <span class="series-book-num">${f.series_order?'#'+f.series_order:'?'}</span>
         <span class="series-book-title">${f.title}</span>
-        <span class="series-book-status"><span class="status-badge status-${f.status}" style="position:static;font-size:.55rem">${f.status}</span></span>
+        <span class="series-book-status"><span class="status-badge status-${f.status.replace(/ /g,'-')}" style="position:static;font-size:.55rem">${f.status}</span></span>
       </div>`).join('');
     const more=sorted.length>4?`<div style="font-size:.72rem;color:var(--parchment-dim);font-style:italic;margin-top:.2rem">…and ${sorted.length-4} more</div>`:'';
     return`<div class="series-card" onclick="showSeriesFics('${name.replace(/'/g,"\\'")}')" >
@@ -2942,7 +2947,7 @@ function showSeriesFics(name){
         <div class="series-fic-title">${f.title}</div>
         <div class="series-fic-author">by ${f.author}</div>
         <div class="series-fic-meta">
-          <span><span class="status-badge status-${f.status}" style="position:static;font-size:.6rem">${f.status}</span></span>
+          <span><span class="status-badge status-${f.status.replace(/ /g,'-')}" style="position:static;font-size:.6rem">${f.status}</span></span>
           ${f.words?`<span>${fmt(f.words)} words</span>`:''}
           ${starsHTML?`<span style="color:var(--gold)">${starsHTML}</span>`:''}
         </div>
