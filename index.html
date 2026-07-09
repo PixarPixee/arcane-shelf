@@ -1461,7 +1461,7 @@ function renderFotm(){
         <div class="fotm-author">by ${f.author}</div>
         ${reviewHTML}
         <div class="fotm-actions">
-          ${f.link?`<a class="btn-read" href="${f.link}" target="_blank">Read on AO3 →</a>`:''}
+          ${f.link?`<a class="btn-read" href="${f.link}" target="_blank">Read Online →</a>`:''}
           <button class="btn-review" onclick="openFicDetail(${f.id})">Full Review →</button>
           ${isOwner?`<button class="fotm-change-btn" onclick="openFotmModal()">Change ✦</button>`:''}
         </div>
@@ -1870,7 +1870,7 @@ function openFicDetail(id){
     </div>
     ${reviewHTML}
     <div class="fic-detail-actions">
-      ${f.link&&f.link!==''?`<a class="btn-read" href="${f.link}" target="_blank" onclick="event.stopPropagation()">Read on AO3 →</a>`:''}
+      ${f.link&&f.link!==''?`<a class="btn-read" href="${f.link}" target="_blank" onclick="event.stopPropagation()">Read Online →</a>`:''}
       ${isOwner&&f.favourite?'<span style="color:var(--gold);font-size:1rem">♥ Favourite</span>':''}
       <span style="margin-left:auto;font-size:.78rem;color:var(--parchment-dim);cursor:pointer" onclick="closeFicDetailDirect()">Close ✕</span>
     </div>`;
