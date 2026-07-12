@@ -801,8 +801,13 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
 <!-- FANDOMS -->
 <div id="page-fandoms" class="page">
   <div id="fandom-grid-view">
-    <h1 class="page-title">Fandoms</h1>
-    <p class="page-sub">Every universe on the shelf. Click a fandom to browse its fics.</p>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+      <div>
+        <h1 class="page-title">Fandoms</h1>
+        <p class="page-sub" style="margin-bottom:0">Every universe on the shelf. Click a fandom to browse its fics.</p>
+      </div>
+      <button class="btn-review owner-only" id="fandom-alias-btn" style="display:none;margin-top:.5rem" onclick="openFandomAliasManager()">🌙 Merge Fandoms</button>
+    </div>
     <div class="fandom-grid" id="fandom-page-grid"></div>
   </div>
   <div id="fandom-landing-view" class="fandom-landing">
@@ -853,6 +858,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
       <p class="page-sub" style="margin-bottom:0">Browse every tag in the archive by category.</p>
     </div>
     <button class="btn-review owner-only" id="tag-manager-btn" style="display:none;margin-top:.5rem" onclick="openTagManager()">⚙️ Manage Categories</button>
+  </div>
+  <div style="display:flex;gap:.75rem;margin-top:1rem;margin-bottom:.25rem;flex-wrap:wrap;align-items:center;">
+    <input class="ship-search" id="tag-search" placeholder="Search tags…" oninput="renderTagsPage()" style="max-width:280px;">
+    <button class="filter-tag" id="rare-tags-btn" onclick="toggleRareTags(this)" style="white-space:nowrap;">Show rare tags</button>
   </div>
   <div id="tag-categories-view" style="margin-top:1.5rem"></div>
   <div id="tag-results" style="display:none">
@@ -1173,6 +1182,27 @@ header{position:sticky;top:0;z-index:100;background:rgba(36,26,18,.96);backdrop-
   </div>
 </div>
 
+<!-- MODAL: FANDOM ALIAS MANAGER -->
+<div class="modal-overlay" id="fandom-alias-modal" onclick="closeModalOutside(event,'fandom-alias-modal')">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-title">🌙 Fandom Alias Manager</div>
+    <p style="font-size:.82rem;color:var(--parchment-dim);font-style:italic;margin-bottom:1.25rem;font-family:'Lora',serif;">Merge fandom name variations into one. Any fandom containing the keyword will display as the canonical name.</p>
+    <div id="alias-list" style="margin-bottom:1rem;display:flex;flex-direction:column;gap:.4rem;max-height:280px;overflow-y:auto;"></div>
+    <div style="border-top:1px solid var(--border);padding-top:1rem;">
+      <div class="form-label">Add New Alias Rule</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem;">
+        <input class="form-input" id="alias-pattern" placeholder="Keyword e.g. twilight" style="flex:1;min-width:140px;">
+        <span style="align-self:center;color:var(--parchment-dim);font-family:'Lora',serif;font-size:.9rem;">→</span>
+        <input class="form-input" id="alias-canonical" placeholder="Display as e.g. Twilight" style="flex:1;min-width:140px;">
+        <button class="btn-save" onclick="addFandomAlias()">Add</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('fandom-alias-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: READING GOAL -->
 <div class="modal-overlay" id="goal-modal" onclick="closeModalOutside(event,'goal-modal')">
   <div class="modal" style="max-width:380px;">
@@ -1294,6 +1324,8 @@ function applyOwnerMode(){
   document.getElementById('dnf-filter').style.display='';
   const goalBtn=document.getElementById('goal-edit-btn');
   if(goalBtn)goalBtn.style.display='';
+  const aliasBtn=document.getElementById('fandom-alias-btn');
+  if(aliasBtn)aliasBtn.style.display='';
   // show edit bio button on welcome screen
   const tagMgrBtn=document.getElementById('tag-manager-btn');
   if(tagMgrBtn)tagMgrBtn.style.display='inline-block';
@@ -1523,6 +1555,7 @@ async function init(){
   try{await loadSettings();}catch(e){}
   try{await loadGoal();}catch(e){}
   try{await loadTagCategories();}catch(e){}
+  try{await loadFandomAliases();}catch(e){}
   renderAll();
   renderWelcome();
   const ls=document.getElementById('loading-screen');
@@ -1540,7 +1573,14 @@ function getFandomColor(fd){if(!fandomColorMap[fd]){fandomColorMap[fd]=FANDOM_CO
 function getFandomGlyph(fd){return GLYPHS[Object.keys(fandomColorMap).indexOf(fd)%GLYPHS.length];}
 function primaryFandom(f){return(f.fandoms&&f.fandoms[0])||'Unknown';}
 function fmt(n){if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return Math.round(n/1000)+'k';return String(n||0);}
-function visibleFics(){return isOwner?fics:fics.filter(f=>f.status!=='DNF');}
+function visibleFics(){
+  const base=isOwner?fics:fics.filter(f=>f.status!=='DNF');
+  if(!fandomAliases.length)return base;
+  return base.map(f=>({
+    ...f,
+    fandoms:(f.fandoms||[]).map(fd=>resolveFandom(fd))
+  }));
+}
 
 function renderAll(){
   renderSidebar();renderCards();renderCurrentlyReading();
@@ -1766,7 +1806,10 @@ function coverPlaceholder(f){
 function cardHTML(f){
   const pf=primaryFandom(f);const fc=getFandomColor(pf);
   const fandomPills=(f.fandoms||[pf]).map(fd=>{const c=getFandomColor(fd);return`<span class="card-fandom-pill" style="background:${c.color}22;color:${c.light};border:1px solid ${c.color}44">${fd}</span>`;}).join('');
-  const tagHtml=(f.tags||[]).map(t=>{const cls=(t.includes('Death')||t.includes('Dark')||t.includes('Violence'))?'tag-warning':t.includes('AU')?'tag-au':'tag-general';return`<span class="tag ${cls}" onclick="filterByTag(event,'${t.replace(/'/g,"\\'")}')">${t}</span>`;}).join('');
+  const allTags=f.tags||[];
+  const visibleTags=allTags.slice(0,4);
+  const extraCount=allTags.length-4;
+  const tagHtml=visibleTags.map(t=>{const cls=(t.toLowerCase().includes('death')||t.toLowerCase().includes('dark')||t.toLowerCase().includes('violence'))?'tag-warning':t.toLowerCase().includes('au')?'tag-au':'tag-general';return`<span class="tag ${cls}" onclick="filterByTag(event,'${t.replace(/'/g,"\\'")}')">${t}</span>`;}).join('')+(extraCount>0?`<span class="tag tag-general" style="opacity:.6">+${extraCount} more</span>`:'')
   const stCls=`status-${f.status.replace(/ /g,'-')}`;
   const coverBanner=f.cover?`<div><img class="card-cover" src="${f.cover}" alt="" onerror="this.parentElement.innerHTML=coverPlaceholder(fics.find(x=>x.id===${f.id}))"></div>`:coverPlaceholder(f);
   const ownerActions=isOwner?`<div class="card-actions">
@@ -2045,53 +2088,86 @@ function getTagCategory(tag){
   return null;
 }
 
+let showRareTags=false;
+
+function toggleRareTags(btn){
+  showRareTags=!showRareTags;
+  btn.textContent=showRareTags?'Hide rare tags':'Show rare tags';
+  btn.classList.toggle('active',showRareTags);
+  renderTagsPage();
+}
+
 function renderTagsPage(){
   const el=document.getElementById('tag-categories-view');
   if(!el)return;
+  const q=(document.getElementById('tag-search')?.value||'').toLowerCase().trim();
   const counts={};
   visibleFics().forEach(f=>(f.tags||[]).forEach(t=>{counts[t]=(counts[t]||0)+1;}));
   if(!Object.keys(counts).length){el.innerHTML='<div class="empty-state">No tags yet.</div>';return;}
+
+  // filter by search and rarity
+  const filtered=Object.fromEntries(Object.entries(counts).filter(([tag,ct])=>{
+    if(q&&!tag.toLowerCase().includes(q))return false;
+    if(!showRareTags&&ct<2)return false;
+    return true;
+  }));
 
   // sort tags into categories
   const catMap={};
   const uncategorized=[];
   tagCategories.forEach(c=>{catMap[c.id||c.name]=[];});
-  Object.keys(counts).forEach(tag=>{
+  Object.keys(filtered).forEach(tag=>{
     const cat=getTagCategory(tag);
     if(cat){(catMap[cat.id||cat.name]||(catMap[cat.id||cat.name]=[])).push(tag);}
     else{uncategorized.push(tag);}
   });
 
-  let html='';
-  tagCategories.forEach(cat=>{
-    const tags=(catMap[cat.id||cat.name]||[]).sort((a,b)=>counts[b]-counts[a]);
-    if(!tags.length)return;
-    const color=cat.color||'#C4787A';
-    html+=`<div class="tag-category-section">
-      <div class="tag-category-header">
-        <span class="tag-category-emoji">${cat.emoji||'🏷️'}</span>
-        <span class="tag-category-name">${cat.name}</span>
-        <span class="tag-category-count">${tags.length} tag${tags.length!==1?'s':''}</span>
-      </div>
-      <div class="tag-category-pills">
-        ${tags.map(tag=>`<span class="tag-pill" style="background:${color}18;border-color:${color}35;color:${color}" onclick="showTagFics('${tag.replace(/'/g,"\\'")}')">${tag}<span class="tag-pill-count">${counts[tag]}</span></span>`).join('')}
-      </div>
-    </div>`;
-  });
+  const totalShown=Object.keys(filtered).length;
+  const totalAll=Object.keys(counts).length;
+  const hiddenCount=totalAll-totalShown;
 
-  if(uncategorized.length){
-    html+=`<div class="tag-category-section tag-uncategorized">
-      <div class="tag-category-header">
-        <span class="tag-category-emoji">🏷️</span>
-        <span class="tag-category-name" style="color:var(--parchment-dim)">Uncategorized</span>
-        <span class="tag-category-count">${uncategorized.length} tag${uncategorized.length!==1?'s':''}</span>
-      </div>
-      <div class="tag-category-pills">
-        ${uncategorized.sort((a,b)=>counts[b]-counts[a]).map(tag=>`<span class="tag-pill" style="background:rgba(196,150,60,.1);border-color:rgba(196,150,60,.2);color:var(--gold-light)" onclick="showTagFics('${tag.replace(/'/g,"\\'")}')">${tag}<span class="tag-pill-count">${counts[tag]}</span></span>`).join('')}
-      </div>
-    </div>`;
+  let html='';
+  if(q){
+    // when searching show flat list across all categories
+    const allMatching=Object.keys(filtered).sort((a,b)=>counts[b]-counts[a]);
+    if(!allMatching.length){el.innerHTML='<div class="empty-state">No tags match your search.</div>';return;}
+    html+=`<div class="tag-category-section"><div class="tag-category-pills">${allMatching.map(tag=>{const color=getTagCategory(tag)?.color||'#C4963C';return`<span class="tag-pill" style="background:${color}18;border-color:${color}35;color:${color}" onclick="showTagFics('${tag.replace(/'/g,"\\'")}')">${tag}<span class="tag-pill-count">${counts[tag]}</span></span>`;}).join('')}</div></div>`;
+  } else {
+    tagCategories.forEach(cat=>{
+      const tags=(catMap[cat.id||cat.name]||[]).sort((a,b)=>counts[b]-counts[a]);
+      if(!tags.length)return;
+      const color=cat.color||'#C4787A';
+      html+=`<div class="tag-category-section">
+        <div class="tag-category-header">
+          <span class="tag-category-emoji">${cat.emoji||'🏷️'}</span>
+          <span class="tag-category-name">${cat.name}</span>
+          <span class="tag-category-count">${tags.length} tag${tags.length!==1?'s':''}</span>
+        </div>
+        <div class="tag-category-pills">
+          ${tags.map(tag=>`<span class="tag-pill" style="background:${color}18;border-color:${color}35;color:${color}" onclick="showTagFics('${tag.replace(/'/g,"\\'")}')">${tag}<span class="tag-pill-count">${counts[tag]}</span></span>`).join('')}
+        </div>
+      </div>`;
+    });
+    if(uncategorized.length){
+      html+=`<div class="tag-category-section tag-uncategorized">
+        <div class="tag-category-header">
+          <span class="tag-category-emoji">🏷️</span>
+          <span class="tag-category-name" style="color:var(--parchment-dim)">Uncategorized</span>
+          <span class="tag-category-count">${uncategorized.length} tag${uncategorized.length!==1?'s':''}</span>
+        </div>
+        <div class="tag-category-pills">
+          ${uncategorized.sort((a,b)=>counts[b]-counts[a]).map(tag=>`<span class="tag-pill" style="background:rgba(196,150,60,.1);border-color:rgba(196,150,60,.2);color:var(--gold-light)" onclick="showTagFics('${tag.replace(/'/g,"\\'")}')">${tag}<span class="tag-pill-count">${counts[tag]}</span></span>`).join('')}
+        </div>
+      </div>`;
+    }
   }
-  el.innerHTML=html;
+
+  // show hidden count note
+  if(!q&&hiddenCount>0){
+    html+=`<div style="text-align:center;font-size:.78rem;color:var(--parchment-dim);font-style:italic;margin-top:1rem;font-family:'Lora',serif;">${hiddenCount} rare tag${hiddenCount!==1?'s':''} with only 1 fic hidden — <span style="cursor:pointer;color:var(--rose-light);text-decoration:underline" onclick="toggleRareTags(document.getElementById('rare-tags-btn'))">show them</span></div>`;
+  }
+
+  el.innerHTML=html||'<div class="empty-state">No tags match your filters.</div>';
 }
 
 function showTagFics(tag){
@@ -3293,6 +3369,52 @@ async function crCommitEdit(id,total){
 let goalYear=new Date().getFullYear();
 let goalTarget=50;
 
+async function saveFandomAliases(){
+  try{await setSetting('fandom_aliases',JSON.stringify(fandomAliases));}
+  catch(e){showToast('Error saving aliases.');}
+}
+
+function openFandomAliasManager(){
+  renderAliasList();
+  document.getElementById('fandom-alias-modal').classList.add('open');
+}
+
+function renderAliasList(){
+  const el=document.getElementById('alias-list');
+  if(!fandomAliases.length){
+    el.innerHTML='<div style="color:var(--parchment-dim);font-style:italic;font-size:.85rem;font-family:\'Lora\',serif;">No aliases yet. Add one below!</div>';
+    return;
+  }
+  el.innerHTML=fandomAliases.map((a,i)=>`
+    <div style="display:flex;align-items:center;gap:.65rem;padding:.5rem .65rem;background:var(--card-bg);border:1px solid var(--border);border-radius:7px;">
+      <span style="font-family:'DM Mono',monospace;font-size:.75rem;color:var(--parchment-dim);flex:1">*${a.pattern}*</span>
+      <span style="color:var(--parchment-dim);font-size:.8rem">→</span>
+      <span style="font-family:'Playfair Display',serif;font-size:.85rem;color:var(--walnut);font-style:italic;flex:1">${a.canonical}</span>
+      <button onclick="removeFandomAlias(${i})" style="background:none;border:none;color:var(--parchment-dim);cursor:pointer;font-size:.8rem;padding:.1rem .3rem;transition:color .2s;" onmouseover="this.style.color='var(--rose-light)'" onmouseout="this.style.color='var(--parchment-dim)'">✕</button>
+    </div>`).join('');
+}
+
+async function addFandomAlias(){
+  const pattern=document.getElementById('alias-pattern').value.trim();
+  const canonical=document.getElementById('alias-canonical').value.trim();
+  if(!pattern||!canonical)return;
+  fandomAliases.push({pattern,canonical});
+  await saveFandomAliases();
+  document.getElementById('alias-pattern').value='';
+  document.getElementById('alias-canonical').value='';
+  renderAliasList();
+  renderFandomPage();
+  showToast('✦ Alias added!');
+}
+
+async function removeFandomAlias(i){
+  fandomAliases.splice(i,1);
+  await saveFandomAliases();
+  renderAliasList();
+  renderFandomPage();
+  showToast('Alias removed.');
+}
+
 async function loadGoal(){
   try{
     const yr=await getSetting('goal_year');
@@ -3396,6 +3518,26 @@ function exitFandomLanding(){
   activeFandomLanding='';
   document.getElementById('fandom-grid-view').style.display='block';
   document.getElementById('fandom-landing-view').classList.remove('active');
+}
+
+// ══════════════════════════════════════════
+// FANDOM ALIASES
+// ══════════════════════════════════════════
+let fandomAliases=[]; // [{pattern:'twilight', canonical:'Twilight'}]
+const FANDOM_ALIASES_KEY='arcane_shelf_fandom_aliases';
+
+async function loadFandomAliases(){
+  try{
+    const raw=await getSetting('fandom_aliases');
+    if(raw)fandomAliases=JSON.parse(raw);
+  }catch(e){fandomAliases=[];}
+}
+
+function resolveFandom(fandom){
+  if(!fandom)return fandom;
+  const fl=fandom.toLowerCase();
+  const match=fandomAliases.find(a=>fl.includes(a.pattern.toLowerCase()));
+  return match?match.canonical:fandom;
 }
 
 // back to top
